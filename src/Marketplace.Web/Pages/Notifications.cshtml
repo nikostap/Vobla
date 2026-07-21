@@ -1,0 +1,72 @@
+@page
+@model Marketplace.Web.Pages.NotificationsModel
+@{
+    ViewData["Title"] = "Уведомления";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="account-page page-shell notifications-page">
+    <header class="directory-title notifications-title">
+        <div>
+            <span class="eyebrow">События аккаунта</span>
+            <h1>Уведомления</h1>
+            <p>@(Model.UnreadCount == 0 ? "Новых уведомлений нет." : $"Непрочитанных: {Model.UnreadCount}.") Здесь собраны изменения цен, сохранённые поиски и сделки.</p>
+        </div>
+        @if (Model.UnreadCount > 0)
+        {
+            <form method="post" asp-page-handler="MarkAllRead">
+                <button class="ui-button" type="submit">Прочитать все</button>
+            </form>
+        }
+    </header>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <div class="notice notice--success" role="status">@notice</div>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="state-panel">
+            <div>
+                <div class="state-panel__icon">○</div>
+                <h2>Уведомлений пока нет</h2>
+                <p>Мы сообщим о снижении цены, новых результатах поиска и изменениях сделки.</p>
+                <a class="ui-button primary" asp-page="/Index">Посмотреть объявления</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <section class="notification-list" aria-label="Список уведомлений">
+            @foreach (var item in Model.Items)
+            {
+                <article class="notification-item @(!item.IsRead ? "is-unread" : null)">
+                    <span class="notification-item__marker" aria-hidden="true"></span>
+                    <div>
+                        <span class="ui-badge">@item.TypeLabel</span>
+                        <p>@item.Text</p>
+                        <time>@item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time>
+                    </div>
+                    <div class="notification-item__actions">
+                        @if (!string.IsNullOrWhiteSpace(item.Link))
+                        {
+                            <form method="post" asp-page-handler="Open">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="ui-button primary" type="submit">Открыть</button>
+                            </form>
+                        }
+                        else if (!item.IsRead)
+                        {
+                            <form method="post" asp-page-handler="MarkRead">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="ui-button" type="submit">Прочитано</button>
+                            </form>
+                        }
+                    </div>
+                </article>
+            }
+        </section>
+    }
+</main>

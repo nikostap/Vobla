@@ -1,0 +1,42 @@
+@page
+@model Marketplace.Web.Pages.Listings.CreateModel
+@{ ViewData["Title"] = "Подать объявление"; }
+<partial name="Shared/_AccountNav" />
+<main class="listing-wizard page-shell">
+    <header class="directory-title"><span class="eyebrow">Новое объявление</span><h1>Подайте объявление</h1><p>Черновик сохраняется после каждого шага.</p></header>
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice notice--success">@Model.StatusMessage</div> }
+    <ol class="wizard-steps" aria-label="Шаги публикации"><li class="@(Model.Step >= 1 ? "active" : null)">1. Основное</li><li class="@(Model.Step >= 2 ? "active" : null)">2. Детали</li><li class="@(Model.Step >= 3 ? "active" : null)">3. Публикация</li></ol>
+    @if (Model.Step == 1)
+    {
+        <form method="post" asp-page-handler="SaveBasic" class="wizard-card">
+            <input asp-for="Input.Id" type="hidden" /><input asp-for="Step" type="hidden" />
+            <div class="field"><label asp-for="Input.Title">Название</label><input asp-for="Input.Title" placeholder="Например, игровой ноутбук" /><span asp-validation-for="Input.Title" class="field-error"></span></div>
+            <div class="field"><label asp-for="Input.CategoryId">Категория</label><select asp-for="Input.CategoryId"><option value="">Выберите категорию</option>@foreach (var category in Model.Categories) { <option value="@category.Id">@category.Name</option> }</select><span asp-validation-for="Input.CategoryId" class="field-error"></span></div>
+            <div class="wizard-grid"><div class="field"><label asp-for="Input.DealType">Тип сделки</label><select asp-for="Input.DealType"><option value="FixedPrice">Фиксированная цена</option><option value="Free">Бесплатно</option><option value="Exchange">Обмен</option></select></div><div class="field"><label asp-for="Input.Price">Цена</label><input asp-for="Input.Price" type="number" min="0" placeholder="0" /></div><div class="field"><label asp-for="Input.Condition">Состояние</label><select asp-for="Input.Condition"><option value="Used">Б/у</option><option value="New">Новое</option></select></div></div>
+            <button class="ui-button primary" type="submit">Сохранить и продолжить</button>
+        </form>
+    }
+    else if (Model.Step == 2)
+    {
+        <form method="post" asp-page-handler="SaveDetails" class="wizard-card" enctype="multipart/form-data"><input asp-for="Input.Id" type="hidden" />
+            <div class="field"><label asp-for="Input.Description">Описание</label><textarea asp-for="Input.Description" maxlength="5000" placeholder="Опишите товар, комплектацию и состояние"></textarea></div>
+            <section class="listing-location-editor" data-location-editor data-suggest-url="/maps-api/api/v1/geo/suggest">
+                <div class="field"><label asp-for="Input.AddressText">Адрес или ориентир</label><input asp-for="Input.AddressText" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="listing-address-suggestions" placeholder="Начните вводить адрес" /><span asp-validation-for="Input.AddressText" class="field-error"></span><div id="listing-address-suggestions" class="address-suggestions" role="listbox" hidden></div></div>
+                <input asp-for="Input.Latitude" type="hidden" /><input asp-for="Input.Longitude" type="hidden" />
+                <label class="toggle-row"><span><strong>Показывать точный адрес</strong><small>По умолчанию публичная точка безопасно смещается на 120–300 метров.</small></span><input asp-for="Input.ShowExactAddress" type="checkbox" /></label>
+            </section>
+            <div class="field"><label asp-for="Photos">Фотографии</label><input asp-for="Photos" type="file" accept="image/png,image/jpeg,image/webp" multiple /><small>До 10 файлов JPEG, PNG или WebP, максимум 10 МБ каждый.</small><span asp-validation-for="Photos" class="field-error"></span></div>
+            @if (Model.Media.Count > 0) { <div class="draft-media">@foreach (var media in Model.Media) { <img src="@media.Url" alt="@media.Alt" /> }</div> }
+            @foreach (var field in Model.Attributes) { <div class="field"><label for="attr-@field.Code">@field.Name</label><input id="attr-@field.Code" name="Attribute_@field.Code" value="@field.Value" placeholder="@(field.Unit is null ? "Введите значение" : $"в {field.Unit}")" /></div> }
+            <div class="wizard-actions"><a class="ui-button" asp-route-id="@Model.Input.Id" asp-route-step="1">Назад</a><button class="ui-button primary" type="submit">Сохранить и продолжить</button></div>
+        </form>
+    }
+    else
+    {
+        <section class="wizard-card preview-card"><span class="eyebrow">Предпросмотр</span><h2>@Model.Input.Title</h2><strong class="listing-price">@Model.PriceLabel</strong><p>@Model.Input.Description</p><dl><dt>Категория</dt><dd>@Model.CategoryName</dd><dt>Связь</dt><dd>Сообщения включены</dd></dl>
+            @if (Model.Media.Count > 0) { <div class="draft-media" aria-label="Загруженные фотографии">@foreach (var media in Model.Media) { <img src="@media.Url" alt="@media.Alt" /> }</div> }
+            <form method="post" asp-page-handler="Publish"><input asp-for="Input.Id" type="hidden" /><label class="toggle-row"><span><strong>Согласие с правилами</strong><small>Объявление будет отправлено на автоматическую проверку.</small></span><input asp-for="Input.AcceptRules" type="checkbox" data-testid="rules-consent" /></label><span asp-validation-for="Input.AcceptRules" class="field-error"></span><div class="wizard-actions"><a class="ui-button" asp-route-id="@Model.Input.Id" asp-route-step="2">Назад</a><button class="ui-button primary" type="submit">Отправить на проверку</button></div></form>
+        </section>
+    }
+</main>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

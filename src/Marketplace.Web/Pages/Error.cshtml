@@ -1,0 +1,20 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Не удалось выполнить запрос";
+}
+<main class="error-page page-shell">
+    <section class="error-page__card" role="alert">
+        <span class="error-page__code" aria-hidden="true">500</span>
+        <div>
+            <span class="eyebrow">Внутренняя ошибка</span>
+            <h1>Не удалось выполнить запрос</h1>
+            <p>Мы не показываем технические подробности ошибки. Попробуйте обновить страницу или вернуться в каталог.</p>
+            <div class="error-page__actions"><a class="ui-button primary" asp-page="/Index">Вернуться в каталог</a><button class="ui-button" type="button" data-reload-page>Попробовать снова</button></div>
+            @if (Model.ShowRequestId)
+            {
+                <p class="error-page__reference">Код обращения: <code>@Model.RequestId</code></p>
+            }
+        </div>
+    </section>
+</main>

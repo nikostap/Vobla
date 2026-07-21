@@ -1,0 +1,49 @@
+@page
+@model Marketplace.Web.Pages.Sellers.DetailsModel
+@{ ViewData["Title"] = Model.Seller?.Name ?? "Продавец"; }
+<partial name="Shared/_AccountNav" />
+@if (Model.Seller is not null)
+{
+    <main class="seller-page page-shell">
+        <nav class="breadcrumbs"><a asp-page="/Index">Объявления</a><span>›</span><span>Продавец</span></nav>
+        <header class="seller-profile">
+            <span class="seller-avatar" aria-hidden="true">@if (Model.Seller.AvatarUrl is not null) { <img src="@Model.Seller.AvatarUrl" alt="" /> } else { @(string.IsNullOrWhiteSpace(Model.Seller.Name) ? "П" : Model.Seller.Name[..1].ToUpperInvariant()) }</span>
+            <div class="seller-profile__identity">
+                <span class="eyebrow">Профиль продавца</span>
+                <h1>@Model.Seller.Name</h1>
+                <p>@Model.Seller.City · на Marketplace с @Model.Seller.RegisteredAt.ToLocalTime().ToString("MMMM yyyy")</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Seller.Bio)) { <p class="seller-bio">@Model.Seller.Bio</p> }
+            </div>
+            <div class="seller-profile__trust">
+                <span class="seller-verified">✓ @(Model.Seller.Verified ? "Личность подтверждена" : "Профиль продавца")</span>
+                <strong>@(Model.Seller.Rating is null ? "Нет оценок" : $"★ {Model.Seller.Rating:0.0}")</strong>
+                <small>@Model.Seller.ReviewCount отзывов · @Model.Seller.ActiveListings активных объявлений</small>
+            </div>
+        </header>
+        <section class="seller-section">
+            <div class="section-heading"><div><span class="eyebrow">В продаже</span><h2>Объявления продавца</h2></div></div>
+            @if (Model.Listings.Count == 0) { <div class="state-panel"><div><h2>Активных объявлений пока нет</h2><p>Опубликованные предложения появятся здесь.</p></div></div> }
+            else
+            {
+                <div class="seller-listings">
+                    @foreach (var item in Model.Listings)
+                    {
+                        <a class="seller-listing-card" asp-page="/Listings/Details" asp-route-id="@item.Id">
+                            @if (item.Image is not null) { <img src="@item.Image" alt="@item.Title" loading="lazy" /> }
+                            else { <span class="seller-listing-card__empty">Фото</span> }
+                            <span><small>@item.Category</small><strong>@item.Title</strong><b>@item.Price</b></span>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+        <section class="seller-section">
+            <div class="section-heading"><div><span class="eyebrow">Репутация</span><h2>Отзывы</h2></div></div>
+            @if (Model.Reviews.Count == 0) { <p class="seller-reviews-empty">Подтверждённых отзывов пока нет.</p> }
+            else
+            {
+                <div class="seller-reviews">@foreach (var review in Model.Reviews) { <article><strong>@string.Concat(Enumerable.Repeat("★", review.Rating))</strong><p>@review.Text</p><time>@review.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")</time></article> }</div>
+            }
+        </section>
+    </main>
+}

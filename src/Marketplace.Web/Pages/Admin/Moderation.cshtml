@@ -1,0 +1,12 @@
+@page
+@model Marketplace.Web.Pages.Admin.ModerationModel
+@{ ViewData["Title"] = "Очередь модерации"; }
+<partial name="Shared/_AccountNav" />
+<div class="page-shell"><partial name="_AdminNav" /></div>
+<main class="moderation-page page-shell"><header class="directory-title"><span class="eyebrow">Модерация</span><h1>Очередь проверок</h1><p>Сначала критические и высокорисковые публикации.</p></header>
+    <div class="moderation-stats"><span><strong>@Model.PendingCount</strong>Ожидают решения</span><span><strong>@Model.CriticalCount</strong>Критические</span><span><strong>@Model.ResolvedToday</strong>Решено сегодня</span></div>
+    <section class="moderation-queue">
+        @foreach (var item in Model.Cases) { <article><div>@if (item.IsAppeal) { <span class="ui-badge appeal-badge">Апелляция</span> } else { <span class="ui-badge risk-@item.RiskLevel.ToLowerInvariant()">@item.RiskLevel</span> }<small>@item.RuleSetVersion</small></div><div><h2>@item.Title</h2><p>@item.Category · @item.PriceLabel</p><small>@item.FindingsCount срабатываний · создано @item.CreatedAt.ToLocalTime().ToString("dd.MM HH:mm")</small></div><a class="ui-button primary" asp-page="/Admin/ModerationReview" asp-route-id="@item.Id">Проверить</a></article> }
+        @if (Model.Cases.Count == 0) { <div class="state-panel"><div><div class="state-panel__icon">✓</div><h2>Очередь пуста</h2><p>Новых публикаций для проверки нет.</p></div></div> }
+    </section>
+</main>

@@ -1,0 +1,28 @@
+@page
+@model Marketplace.Web.Pages.Account.DataModel
+@{ ViewData["Title"] = "Данные и удаление аккаунта"; }
+<partial name="Shared/_AccountNav" />
+<main class="account-page page-shell">
+    <header class="account-title"><div><span class="eyebrow">Приватность</span><h1>Данные и удаление аккаунта</h1><p>Здесь можно удалить учётную запись или получить техническую копию своих данных.</p></div></header>
+    <section class="settings-card data-export-card account-danger-zone" id="delete-account">
+        <h2>Удалить учётную запись</h2>
+        @if (Model.PendingErasureRequest is not null)
+        {
+            <div class="notice notice--warning" role="status">Запрос зарегистрирован @Model.PendingErasureRequest.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm") и ожидает проверки оператора.</div>
+            <p>До завершения проверки аккаунт продолжает работать. Запрос можно отменить.</p>
+            <form method="post" asp-page-handler="CancelErasure"><input type="hidden" name="id" value="@Model.PendingErasureRequest.Id" /><button class="ui-button" type="submit">Отменить удаление</button></form>
+        }
+        else
+        {
+            <p>После подтверждения оператором доступ к аккаунту будет закрыт, а данные будут удалены или обезличены с учётом обязательных сроков хранения.</p>
+            <form method="post" asp-page-handler="RequestErasure" class="data-erasure-form"><label class="filter-check"><input type="checkbox" name="confirm" value="true" required /> Я понимаю, что после подтверждения восстановить учётную запись и объявления будет невозможно.</label><button class="ui-button danger" type="submit">Запросить удаление учётной записи</button></form>
+        }
+    </section>
+    <section class="settings-card data-export-card">
+        <h2>Скачать техническую копию данных</h2>
+        <ul><li>Профиль, настройки, роли, сессии и журнал действий.</li><li>Ваши объявления, медиа-метаданные, атрибуты и сохранённые адреса.</li><li>Диалоги и сообщения, избранное, сравнение, сделки и отзывы.</li><li>История рекомендаций, уведомления и записи sandbox-монетизации.</li></ul>
+        <p>Хеши пароля и OTP, security stamps, внутренние ключи хранения файлов и данные посторонних аккаунтов не экспортируются.</p>
+        <a class="ui-button" asp-page-handler="Export" download>Скачать JSON</a>
+    </section>
+    <aside class="notice">Скачивание копии не запускает удаление и не влияет на аккаунт.</aside>
+</main>

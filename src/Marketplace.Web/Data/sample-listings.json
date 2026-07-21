@@ -1,0 +1,138 @@
+[
+  {
+    "id": "demo-apartment-1",
+    "category": "Недвижимость / Квартиры",
+    "title": "2-комн. квартира, 55 м²",
+    "price": 7850000,
+    "priceLabel": "7 850 000 ₽",
+    "description": "Светлая квартира в новом доме. Удобная планировка, окна во двор.",
+    "location": "Москва, м. Солнцево",
+    "publishedLabel": "Сегодня, 11:32",
+    "verifiedIdentity": true,
+    "negotiable": false,
+    "image": "/demo/images/apartment.png",
+    "coordinates": [
+      55.645,
+      37.394
+    ]
+  },
+  {
+    "id": "demo-car-1",
+    "category": "Транспорт / Автомобили",
+    "title": "BMW 5 серия, 2018",
+    "price": 2150000,
+    "priceLabel": "2 150 000 ₽",
+    "description": "2.0 л / 184 л.с., автомат, полный привод. Отличное состояние.",
+    "location": "Москва, м. Крылатское",
+    "publishedLabel": "Вчера, 18:45",
+    "verifiedIdentity": true,
+    "negotiable": true,
+    "image": "/demo/images/bmw.png",
+    "coordinates": [
+      55.756,
+      37.408
+    ]
+  },
+  {
+    "id": "demo-sofa-1",
+    "category": "Дом и мебель / Мягкая мебель",
+    "title": "Диван раскладной",
+    "price": 32000,
+    "priceLabel": "32 000 ₽",
+    "description": "Современный диван в отличном состоянии. Механизм еврокнижка.",
+    "location": "Москва, м. Дмитровская",
+    "publishedLabel": "Сегодня, 09:14",
+    "verifiedIdentity": false,
+    "negotiable": true,
+    "image": "/demo/images/sofa.png",
+    "coordinates": [
+      55.808,
+      37.581
+    ]
+  },
+  {
+    "id": "demo-phone-1",
+    "category": "Электроника / Смартфоны",
+    "title": "iPhone 13, 128 ГБ",
+    "price": 64990,
+    "priceLabel": "64 990 ₽",
+    "description": "Синий, в идеальном состоянии. Полный комплект, чек, гарантия.",
+    "location": "Москва, м. Тверская",
+    "publishedLabel": "2 дня назад",
+    "verifiedIdentity": true,
+    "negotiable": true,
+    "image": "/demo/images/iphone.png",
+    "coordinates": [
+      55.765,
+      37.605
+    ]
+  },
+  {
+    "id": "demo-chair-1",
+    "category": "Дом и мебель / Мебель",
+    "title": "Кресло компьютерное",
+    "price": 8500,
+    "priceLabel": "8 500 ₽",
+    "description": "Эргономичное кресло с поясничной поддержкой и регулировками.",
+    "location": "Москва, м. Алексеевская",
+    "publishedLabel": "Сегодня, 10:21",
+    "verifiedIdentity": false,
+    "negotiable": false,
+    "image": "/demo/images/chair.png",
+    "coordinates": [
+      55.807,
+      37.638
+    ]
+  },
+  {
+    "id": "demo-washer-1",
+    "category": "Электроника / Бытовая техника",
+    "title": "Стиральная машина Bosch",
+    "price": 16000,
+    "priceLabel": "16 000 ₽",
+    "description": "Загрузка 6 кг, 1000 об/мин. Работает отлично.",
+    "location": "Москва, м. Бабушкинская",
+    "publishedLabel": "Вчера, 16:03",
+    "verifiedIdentity": true,
+    "negotiable": false,
+    "image": "/demo/images/washer.png",
+    "coordinates": [
+      55.87,
+      37.664
+    ]
+  },
+  {
+    "id": "demo-table-1",
+    "category": "Дом и мебель / Столы и стулья",
+    "title": "Стол обеденный",
+    "price": 12000,
+    "priceLabel": "12 000 ₽",
+    "description": "Деревянный стол, 140×80 см. Состояние отличное.",
+    "location": "Москва, м. Павелецкая",
+    "publishedLabel": "3 дня назад",
+    "verifiedIdentity": false,
+    "negotiable": true,
+    "image": "/demo/images/table.png",
+    "coordinates": [
+      55.731,
+      37.637
+    ]
+  },
+  {
+    "id": "demo-shoes-1",
+    "category": "Одежда и обувь / Обувь",
+    "title": "Кроссовки Nike Air Force 1",
+    "price": 4200,
+    "priceLabel": "4 200 ₽",
+    "description": "Оригинал, размер 42. Носились несколько раз.",
+    "location": "Москва, м. Молодёжная",
+    "publishedLabel": "Вчера, 12:11",
+    "verifiedIdentity": false,
+    "negotiable": false,
+    "image": "/demo/images/shoes.png",
+    "coordinates": [
+      55.741,
+      37.416
+    ]
+  }
+]

@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: marketplace
+      POSTGRES_USER: marketplace
+      POSTGRES_PASSWORD: marketplace_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - marketplace-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marketplace -d marketplace"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  maps-api:
+    build:
+      context: ../Maps/marketplace_maps_codex
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=host.docker.internal;Port=5434;Database=marketplace;Username=marketplace;Password=local-only-change-me
+    volumes:
+      - ../Maps/marketplace_maps_codex/infra/maps/data/output:/infra/maps/data/output:ro
+      - ../Maps/marketplace_maps_codex/infra/maps/assets:/infra/maps/assets:ro
+    ports:
+      - "5179:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/api/v1/map/config"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
+  marketplace-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Marketplace: Host=postgres;Port=5432;Database=marketplace;Username=marketplace;Password=marketplace_dev
+      MAPS_API_BASE_URL: ${MAPS_API_BASE_URL:-http://maps-api:8080}
+      Maps__LocalAssetsRoot: /app/map-assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      maps-api:
+        condition: service_healthy
+    volumes:
+      - marketplace-data-protection-app:/home/app/.aspnet/DataProtection-Keys
+      - marketplace-chat-data:/app/App_Data
+      - marketplace-uploads:/app/wwwroot/uploads
+      - ../Maps/marketplace_maps_codex/infra/maps/data/output:/app/map-assets/maps:ro
+      - ../Maps/marketplace_maps_codex/infra/maps/assets:/app/map-assets/assets:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/health/ready"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+    ports:
+      - "5080:8080"
+    restart: unless-stopped
+
+volumes:
+  marketplace-postgres:
+  marketplace-data-protection-app:
+  marketplace-chat-data:
+  marketplace-uploads:

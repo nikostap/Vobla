@@ -1,0 +1,137 @@
+@page
+@model Marketplace.Web.Pages.RecommendationsModel
+@{
+    ViewData["Title"] = "Рекомендации и поиски";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="account-page page-shell recommendations-page">
+    <header class="account-title">
+        <div>
+            <span class="eyebrow">M10 · Персонализация</span>
+            <h1>Рекомендации и сохранённые поиски</h1>
+            <p>История хранится 30 дней. Управлять персонализацией можно в профиле.</p>
+        </div>
+        <a class="ui-button" asp-page="/Account/Profile">Настройки приватности</a>
+    </header>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <div class="notice notice--success" role="status">@notice</div>
+    }
+
+    <section class="detail-card">
+        <div class="section-heading">
+            <div>
+                <h2>Сохранённые поиски</h2>
+                <p>При открытии страницы мы проверяем появление новых результатов.</p>
+            </div>
+        </div>
+
+        @if (Model.SavedSearches.Count == 0)
+        {
+            <div class="state-panel">
+                <div>
+                    <div class="state-panel__icon">⌕</div>
+                    <h3>Поисков пока нет</h3>
+                    <p>Настройте фильтры в каталоге и нажмите «Сохранить поиск».</p>
+                    <a class="ui-button primary" asp-page="/Index">Перейти к поиску</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="saved-search-list">
+                @foreach (var item in Model.SavedSearches)
+                {
+                    <article class="saved-search-item">
+                        <div>
+                            <a href="@item.Url"><strong>@item.Name</strong></a>
+                            <small>
+                                @item.Count результатов
+                                @if (item.NewCount > 0)
+                                {
+                                    <b class="ui-badge">+@item.NewCount новых</b>
+                                }
+                            </small>
+                        </div>
+                        <div class="saved-search-actions">
+                            <form method="post" asp-page-handler="ToggleNotifications">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="ui-button" type="submit">@(item.NotificationsEnabled ? "Уведомления включены" : "Уведомления выключены")</button>
+                            </form>
+                            <form method="post" asp-page-handler="Remove">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button class="ui-button ghost" type="submit">Удалить</button>
+                            </form>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    @if (!Model.PersonalizationEnabled)
+    {
+        <div class="notice"><strong>Персональные рекомендации выключены.</strong> История не записывается. Сохранённые поиски продолжат работать.</div>
+    }
+    else
+    {
+        <section class="detail-card">
+            <div class="section-heading">
+                <div>
+                    <h2>Недавно просмотренные</h2>
+                    <p>Только объявления за последние 30 дней.</p>
+                </div>
+                <form method="post" asp-page-handler="ClearHistory">
+                    <button class="ui-button ghost" type="submit">Очистить историю</button>
+                </form>
+            </div>
+
+            @if (Model.RecentlyViewed.Count == 0)
+            {
+                <p>Вы ещё не открывали объявления.</p>
+            }
+            else
+            {
+                <div class="recommendation-grid">
+                    @foreach (var item in Model.RecentlyViewed)
+                    {
+                        <a class="recommendation-card" asp-page="/Listings/Details" asp-route-id="@item.Id">
+                            @if (!string.IsNullOrWhiteSpace(item.Image))
+                            {
+                                <img src="@item.Image" alt="" loading="lazy" />
+                            }
+                            <span>
+                                <strong>@item.PriceLabel</strong>
+                                <b>@item.Title</b>
+                                <small>@item.City · @item.ViewedAt.ToLocalTime().ToString("dd.MM HH:mm")</small>
+                            </span>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="detail-card">
+            <h2>Недавние поиски</h2>
+            @if (Model.SearchHistory.Count == 0)
+            {
+                <p>История поиска пока пуста.</p>
+            }
+            else
+            {
+                <div class="search-history-list">
+                    @foreach (var item in Model.SearchHistory)
+                    {
+                        <a href="@item.Url">
+                            <span>@item.Label</span>
+                            <time>@item.SearchedAt.ToLocalTime().ToString("dd.MM HH:mm")</time>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+    }
+</main>

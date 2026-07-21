@@ -1,0 +1,2 @@
+namespace Marketplace.Web.Modules.Moderation;
+public sealed class ModerationAppeal { public Guid Id { get; set; } public Guid ModerationCaseId { get; set; } public ModerationCase ModerationCase { get; set; } = null!; public Guid UserId { get; set; } public string Message { get; set; } = string.Empty; public string Status { get; set; } = "Pending"; public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow; }

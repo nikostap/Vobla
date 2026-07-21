@@ -1,0 +1,4 @@
+@page
+@{ Response.StatusCode = StatusCodes.Status403Forbidden; ViewData["Title"] = "Доступ запрещён"; }
+<partial name="Shared/_AccountNav" />
+<main class="account-page page-shell"><section class="state-panel"><div><div class="state-panel__icon">!</div><h1>Недостаточно прав</h1><p>У вашей роли нет доступа к этому разделу или действию.</p><a class="ui-button primary" asp-page="/Account/Profile">Вернуться в профиль</a></div></section></main>

@@ -1,0 +1,114 @@
+@page
+@{
+    ViewData["Title"] = "Дизайн-система";
+}
+
+<div class="gallery-page">
+    <header class="gallery-header">
+        <div class="gallery-header__inner page-shell">
+            <a class="brand" asp-page="/Index"><span class="brand-mark"><span>m</span></span><span class="brand-name">Marketplace</span></a>
+            <a class="back-link" asp-page="/Index">← В каталог</a>
+            <button class="ui-button ghost theme-toggle" type="button" aria-label="Переключить тему">◐ <span>Тема</span></button>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="gallery-title">
+            <span class="ui-badge warning">M1 · живая галерея</span>
+            <h1>Дизайн-система</h1>
+            <p>Базовые компоненты Marketplace в утверждённом стиле тёплого функционального минимализма. Все элементы используют общие tokens и доступны с клавиатуры.</p>
+        </section>
+
+        <section class="component-section" aria-labelledby="buttons-title">
+            <h2 id="buttons-title">Кнопки</h2>
+            <p class="component-section__note">Основные действия, вторичные сценарии, загрузка и недоступное состояние.</p>
+            <div class="component-row">
+                <button class="ui-button primary" type="button">Подать объявление</button>
+                <button class="ui-button" type="button">Сохранить</button>
+                <button class="ui-button ghost" type="button">Отмена</button>
+                <button class="ui-button danger" type="button">Удалить</button>
+                <button class="ui-button loading" type="button" aria-busy="true">Сохраняем</button>
+                <button class="ui-button" type="button" disabled>Недоступно</button>
+            </div>
+        </section>
+
+        <section class="component-section" aria-labelledby="chips-title">
+            <h2 id="chips-title">Chips и badges</h2>
+            <p class="component-section__note">Выбор категорий и короткие статусы без опоры только на цвет.</p>
+            <div class="component-row">
+                <button class="ui-chip active" type="button">✓ Все категории</button>
+                <button class="ui-chip" type="button">Недвижимость</button>
+                <button class="ui-chip" type="button">Электроника</button>
+                <button class="ui-chip" type="button" disabled>Недоступно</button>
+            </div>
+            <div class="component-row">
+                <span class="ui-badge success">✓ Личность подтверждена</span>
+                <span class="ui-badge warning">Торг</span>
+                <span class="ui-badge danger">Требует исправления</span>
+                <span class="ui-badge">Черновик</span>
+            </div>
+        </section>
+
+        <section class="component-section" aria-labelledby="inputs-title">
+            <h2 id="inputs-title">Поля ввода</h2>
+            <p class="component-section__note">Подсказки и ошибки связаны с полями семантически.</p>
+            <div class="component-row">
+                <div class="field">
+                    <label for="demo-title">Название объявления</label>
+                    <input id="demo-title" value="Диван раскладной" />
+                    <small>До 70 символов</small>
+                </div>
+                <div class="field">
+                    <label for="demo-category">Категория</label>
+                    <select id="demo-category"><option>Дом и мебель</option><option>Электроника</option></select>
+                    <small>Можно изменить до публикации</small>
+                </div>
+                <div class="field">
+                    <label for="demo-price">Цена</label>
+                    <input id="demo-price" value="—" aria-invalid="true" aria-describedby="price-error" />
+                    <small class="field-error" id="price-error">Укажите цену или выберите «Бесплатно»</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="component-section" aria-labelledby="cards-title">
+            <h2 id="cards-title">Карточка</h2>
+            <p class="component-section__note">Изображение 4:3, фиксированная анатомия и компактные статусы.</p>
+            <div class="component-grid">
+                <article class="mini-card">
+                    <img src="/demo/images/sofa.png" alt="Светлый раскладной диван" />
+                    <div class="mini-card__body"><strong>32 000 ₽</strong><b>Диван раскладной</b><br /><span>Москва, Дмитровская</span></div>
+                </article>
+                <div class="state-panel"><div><span class="state-panel__icon">☆</span><h3>Пока пусто</h3><p>Сохранённые объявления появятся здесь.</p></div></div>
+                <div class="state-panel"><div class="skeleton" aria-label="Загрузка карточки" aria-busy="true"><span></span><span></span><span></span></div></div>
+            </div>
+        </section>
+
+        <section class="component-section" aria-labelledby="states-title">
+            <h2 id="states-title">Системные состояния</h2>
+            <p class="component-section__note">Loading, empty и error дают понятное следующее действие.</p>
+            <div class="component-grid">
+                <div class="state-panel"><div><span class="state-panel__icon">↻</span><h3>Обновляем выдачу</h3><p>Обычно это занимает пару секунд.</p></div></div>
+                <div class="state-panel"><div><span class="state-panel__icon">⌕</span><h3>Ничего не найдено</h3><p>Попробуйте изменить фильтры или район.</p></div></div>
+                <div class="state-panel"><div><span class="state-panel__icon">!</span><h3>Не удалось загрузить</h3><p>Проверьте соединение и повторите.</p><button class="ui-button" type="button">Повторить</button></div></div>
+            </div>
+        </section>
+
+        <section class="component-section" aria-labelledby="dialog-title">
+            <h2 id="dialog-title">Диалог</h2>
+            <p class="component-section__note">Нативный modal dialog удерживает фокус и закрывается клавишей Escape.</p>
+            <button class="ui-button primary" type="button" data-dialog-open="demo-dialog">Открыть диалог</button>
+        </section>
+    </main>
+</div>
+
+<dialog class="ui-dialog" id="demo-dialog" aria-labelledby="demo-dialog-title">
+    <div class="ui-dialog__content">
+        <h2 id="demo-dialog-title">Сбросить фильтры?</h2>
+        <p>Цена, категория и выбранный район вернутся к значениям по умолчанию.</p>
+        <div class="ui-dialog__actions">
+            <button class="ui-button ghost" type="button" data-dialog-close>Отмена</button>
+            <button class="ui-button primary" type="button" data-dialog-close>Сбросить</button>
+        </div>
+    </div>
+</dialog>

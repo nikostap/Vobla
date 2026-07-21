@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf9f7" />
+    <meta name="description" content="Marketplace — демонстрационный каталог частных объявлений" />
+    <title>@ViewData["Title"] — Marketplace</title>
+    <script src="~/js/theme-init.js" asp-append-version="true"></script>
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/vendor/marketplace-map.bundle.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Перейти к основному содержанию</a>
+    <div id="main-content" tabindex="-1">@RenderBody()</div>
+    <footer class="site-footer page-shell">
+        <nav class="site-footer__links" aria-label="Правовая информация">
+            <a asp-page="/Privacy">Конфиденциальность</a>
+            <a asp-page="/Terms">Условия использования</a>
+            <a asp-page="/Cookies">Cookie и сессии</a>
+            <a asp-page="/Rules">Правила объявлений</a>
+        </nav>
+        <span>Marketplace · локальный pre-release контур</span>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,157 @@
+@page
+@model Marketplace.Web.Pages.Listings.DetailsModel
+@{ ViewData["Title"] = Model.Listing?.Title ?? "Объявление"; }
+<partial name="Shared/_AccountNav" />
+<main class="listing-detail page-shell">
+    @if (TempData["Notice"] is string notice) { <div class="notice notice--success">@notice</div> }
+    @if (Model.Listing is not null)
+    {
+        <nav class="breadcrumbs" aria-label="Хлебные крошки"><a asp-page="/Index">Все объявления</a><span>›</span><a asp-page="/Index" asp-route-category="@Model.Listing.CategorySlug">@Model.Listing.CategoryName</a></nav>
+        <div class="listing-detail__layout">
+            <section>
+                <div class="listing-gallery" data-detail-gallery data-gallery-index="0">
+                    @if (Model.Listing.Media.Count == 0) { <div class="listing-gallery__empty">Фотографии пока не добавлены</div> }
+                    else
+                    {
+                        <button class="listing-gallery__stage" type="button" data-detail-open aria-label="Открыть фотографии в увеличенном виде">
+                            @for (var mediaIndex = 0; mediaIndex < Model.Listing.Media.Count; mediaIndex++)
+                            {
+                                var media = Model.Listing.Media[mediaIndex];
+                                <img class="listing-gallery__image @(mediaIndex == 0 ? "is-active" : null)" data-detail-image data-gallery-index="@mediaIndex" src="@media.Url" alt="@media.Alt" loading="@(mediaIndex == 0 ? "eager" : "lazy")" aria-hidden="@(mediaIndex == 0 ? "false" : "true")" />
+                            }
+                            <span class="listing-gallery__zoom">↗ Увеличить</span>
+                        </button>
+                        @if (Model.Listing.Media.Count > 1)
+                        {
+                            <button class="listing-gallery__arrow listing-gallery__arrow--prev" type="button" data-detail-prev aria-label="Предыдущая фотография">‹</button>
+                            <button class="listing-gallery__arrow listing-gallery__arrow--next" type="button" data-detail-next aria-label="Следующая фотография">›</button>
+                            <div class="listing-gallery__footer">
+                                <span data-detail-counter>1 / @Model.Listing.Media.Count</span>
+                                <span class="listing-gallery__dots" aria-label="Выбор фотографии">
+                                    @for (var mediaIndex = 0; mediaIndex < Model.Listing.Media.Count; mediaIndex++)
+                                    {
+                                        <button class="listing-gallery__dot @(mediaIndex == 0 ? "is-active" : null)" type="button" data-detail-dot data-gallery-index="@mediaIndex" aria-label="Фотография @(mediaIndex + 1)" aria-current="@(mediaIndex == 0 ? "true" : "false")"></button>
+                                    }
+                                </span>
+                            </div>
+                        }
+                    }
+                </div>
+                <article class="detail-card"><h2>Описание</h2><p>@(Model.Listing.Description ?? "Описание не добавлено")</p></article>
+                @if (Model.Listing.Attributes.Count > 0) { <article class="detail-card"><h2>Характеристики</h2><dl class="attribute-list">@foreach (var item in Model.Listing.Attributes) { <dt>@item.Name</dt><dd>@item.Value @item.Unit</dd> }</dl></article> }
+            </section>
+            <aside class="detail-sidebar">
+                <span class="ui-badge">@Model.Listing.StatusLabel</span><h1>@Model.Listing.Title</h1><strong class="detail-price">@Model.Listing.PriceLabel</strong><p>@Model.Listing.CategoryName</p>
+                @if (Model.Seller is not null)
+                {
+                    <a class="listing-seller-summary" asp-page="/Sellers/Details" asp-route-id="@Model.Seller.Id">
+                        <span class="seller-avatar" aria-hidden="true">@if (Model.Seller.AvatarUrl is not null) { <img src="@Model.Seller.AvatarUrl" alt="" /> } else { @(string.IsNullOrWhiteSpace(Model.Seller.Name) ? "П" : Model.Seller.Name[..1].ToUpperInvariant()) }</span>
+                        <span>
+                            <small>Продавец</small>
+                            <strong>@Model.Seller.Name</strong>
+                            <span>@Model.Seller.City · @(Model.Seller.Rating is null ? "нет оценок" : $"★ {Model.Seller.Rating:0.0} ({Model.Seller.ReviewCount})")</span>
+                        </span>
+                        <i aria-hidden="true">›</i>
+                    </a>
+                }
+
+                @if (Model.PendingIntent is not null)
+                {
+                    <div class="notice notice--action" role="status">
+                        Вы вошли в аккаунт. Завершите выбранное действие ниже.
+                    </div>
+                }
+
+                @if (Model.IsOwner)
+                {
+                    <a class="ui-button primary" asp-page="/Listings/Create" asp-route-id="@Model.Listing.Id" asp-route-step="1">Редактировать</a>
+                }
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" asp-page-handler="StartChat" class="@(Model.PendingIntent == "contact" ? "intent-action" : null)">
+                        <input type="hidden" name="id" value="@Model.Listing.Id" />
+                        <button class="ui-button primary" type="submit">Написать продавцу</button>
+                    </form>
+                    <div class="engagement-actions">
+                        <form method="post" asp-page-handler="Favorite" class="@(Model.PendingIntent == "favorite" ? "intent-action" : null)">
+                            <input type="hidden" name="id" value="@Model.Listing.Id" />
+                            <button class="ui-button" type="submit">@(Model.IsFavorite ? "Убрать из избранного" : "В избранное")</button>
+                        </form>
+                        <form method="post" asp-page-handler="Compare" class="@(Model.PendingIntent == "compare" ? "intent-action" : null)">
+                            <input type="hidden" name="id" value="@Model.Listing.Id" />
+                            <button class="ui-button" type="submit">@(Model.IsCompared ? "Убрать из сравнения" : "Сравнить")</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    var detailPath = Url.Page("/Listings/Details", new { id = Model.Listing.Id });
+                    <a class="ui-button primary" asp-page="/Account/SignIn" asp-route-ReturnUrl="@(detailPath + "&intent=contact")">Войти, чтобы написать</a>
+                    <div class="engagement-actions engagement-actions--guest">
+                        <a class="ui-button" asp-page="/Account/SignIn" asp-route-ReturnUrl="@(detailPath + "&intent=favorite")">Войти и добавить в избранное</a>
+                        <a class="ui-button" asp-page="/Account/SignIn" asp-route-ReturnUrl="@(detailPath + "&intent=compare")">Войти и сравнить</a>
+                    </div>
+                    <small class="guest-action-hint">После входа вы вернётесь к этому объявлению.</small>
+                }
+            </aside>
+        </div>
+        @if (Model.SimilarListings.Count > 0)
+        {
+            <section class="recommendation-section"><div class="section-heading"><div><span class="eyebrow">Подборка</span><h2>Похожие объявления</h2></div></div><div class="recommendation-grid">@foreach (var item in Model.SimilarListings) { <a class="recommendation-card" asp-page="/Listings/Details" asp-route-id="@item.Id">@if (!string.IsNullOrWhiteSpace(item.Image)) { <img src="@item.Image" alt="" loading="lazy" /> }<span><strong>@item.PriceLabel</strong><b>@item.Title</b><small>@item.City</small></span></a> }</div></section>
+        }
+        @if (Model.RecentlyViewed.Count > 0)
+        {
+            <section class="recommendation-section"><div class="section-heading"><div><span class="eyebrow">Персонально</span><h2>Вы недавно смотрели</h2></div><a asp-page="/Recommendations">История и сохранённые поиски</a></div><div class="recommendation-grid">@foreach (var item in Model.RecentlyViewed) { <a class="recommendation-card" asp-page="/Listings/Details" asp-route-id="@item.Id">@if (!string.IsNullOrWhiteSpace(item.Image)) { <img src="@item.Image" alt="" loading="lazy" /> }<span><strong>@item.PriceLabel</strong><b>@item.Title</b><small>@item.City</small></span></a> }</div></section>
+        }
+        @if (Model.IsOwner)
+        {
+            @if (Model.Moderation is not null)
+            {
+                <section class="moderation-notice" data-testid="moderation-decision">
+                    <div><span class="eyebrow">Решение модерации · @Model.Moderation.RuleSetVersion</span><h2>@(Model.Moderation.Action == "Reject" ? "Объявление отклонено" : Model.Moderation.Action == "NeedsCorrection" ? "Нужно исправление" : "Решение принято")</h2></div>
+                    <dl><dt>Точная причина</dt><dd>@Model.Moderation.Reason</dd>@if (!string.IsNullOrWhiteSpace(Model.Moderation.ProblemField)) { <dt>Проблемное поле</dt><dd>@Model.Moderation.ProblemField</dd> }<dt>Правило</dt><dd><code>@Model.Moderation.RuleReference</code></dd>@if (!string.IsNullOrWhiteSpace(Model.Moderation.Instruction)) { <dt>Как исправить</dt><dd>@Model.Moderation.Instruction</dd> }</dl>
+                    <div class="moderation-notice__actions"><a class="ui-button primary" asp-page="/Listings/Create" asp-route-id="@Model.Listing.Id" asp-route-step="1">Исправить объявление</a></div>
+                    @if (Model.Moderation.HasPendingAppeal) { <p class="notice notice--success">Апелляция ожидает рассмотрения.</p> }
+                    else if (Model.Moderation.Action is "Reject" or "NeedsCorrection") { <form method="post" asp-page-handler="Appeal" class="appeal-form"><input type="hidden" name="id" value="@Model.Listing.Id" /><label for="AppealMessage">Не согласны с решением?</label><textarea id="AppealMessage" name="AppealMessage" minlength="10" maxlength="2000" required placeholder="Объясните, почему решение нужно пересмотреть"></textarea><button class="ui-button" type="submit">Подать апелляцию</button></form> }
+                </section>
+            }
+            <section class="history-grid">
+                <article class="detail-card"><h2>История цены</h2>@if (Model.Listing.Prices.Count == 0) { <p>Изменений пока нет.</p> } else { <ol class="history-list">@foreach (var item in Model.Listing.Prices) { <li><strong>@item.Label</strong><time>@item.At.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time></li> }</ol> }</article>
+                <article class="detail-card"><h2>Ревизии</h2>@if (Model.Listing.Revisions.Count == 0) { <p>Ревизий пока нет.</p> } else { <ol class="history-list">@foreach (var item in Model.Listing.Revisions) { <li><strong>Ревизия @item.Number</strong><time>@item.At.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time></li> }</ol> }</article>
+                <article class="detail-card"><h2>История статусов</h2><ol class="history-list">@foreach (var item in Model.Listing.Statuses) { <li><strong>@item.Status</strong><time>@item.At.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time></li> }</ol></article>
+            </section>
+        }
+        @if (Model.Listing.Media.Count > 0)
+        {
+            <dialog class="photo-viewer" data-photo-viewer aria-label="Увеличенный просмотр фотографий">
+                <div class="photo-viewer__panel">
+                    <button class="photo-viewer__close" type="button" data-viewer-close aria-label="Закрыть увеличенный просмотр">×</button>
+                    <div class="photo-viewer__stage">
+                        @for (var mediaIndex = 0; mediaIndex < Model.Listing.Media.Count; mediaIndex++)
+                        {
+                            var media = Model.Listing.Media[mediaIndex];
+                            <img class="photo-viewer__image @(mediaIndex == 0 ? "is-active" : null)" data-viewer-image data-gallery-index="@mediaIndex" src="@media.Url" alt="@media.Alt" aria-hidden="@(mediaIndex == 0 ? "false" : "true")" />
+                        }
+                        @if (Model.Listing.Media.Count > 1)
+                        {
+                            <button class="photo-viewer__arrow photo-viewer__arrow--prev" type="button" data-viewer-prev aria-label="Предыдущая увеличенная фотография">‹</button>
+                            <button class="photo-viewer__arrow photo-viewer__arrow--next" type="button" data-viewer-next aria-label="Следующая увеличенная фотография">›</button>
+                        }
+                    </div>
+                    <div class="photo-viewer__footer">
+                        <span data-viewer-counter>1 / @Model.Listing.Media.Count</span>
+                        @if (Model.Listing.Media.Count > 1)
+                        {
+                            <span class="photo-viewer__dots" aria-label="Выбор увеличенной фотографии">
+                                @for (var mediaIndex = 0; mediaIndex < Model.Listing.Media.Count; mediaIndex++)
+                                {
+                                    <button class="photo-viewer__dot @(mediaIndex == 0 ? "is-active" : null)" type="button" data-viewer-dot data-gallery-index="@mediaIndex" aria-label="Увеличенная фотография @(mediaIndex + 1)" aria-current="@(mediaIndex == 0 ? "true" : "false")"></button>
+                                }
+                            </span>
+                        }
+                    </div>
+                </div>
+            </dialog>
+        }
+    }
+</main>

@@ -1,0 +1,31 @@
+@page
+@model Marketplace.Web.Pages.Admin.CatalogModel
+@{ ViewData["Title"] = "Редактор каталога"; }
+<partial name="Shared/_AccountNav" />
+<div class="page-shell"><partial name="_AdminNav" /></div>
+<main class="catalog-directory page-shell">
+    <header class="directory-title"><span class="eyebrow">Администратор</span><h1>Редактор каталога</h1><p>Категории и опубликованные схемы изменяются в базе данных без перекомпиляции приложения.</p></header>
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice notice--success">@Model.StatusMessage</div> }
+    <div class="directory-layout">
+        <section class="settings-card">
+            <h2>Новая категория</h2><p>Добавьте раздел или вложенную категорию.</p>
+            <form method="post" asp-page-handler="CreateCategory" class="account-form">
+                <div class="field"><label asp-for="NewCategory.Name">Название</label><input asp-for="NewCategory.Name" /><span asp-validation-for="NewCategory.Name" class="field-error"></span></div>
+                <div class="field"><label asp-for="NewCategory.Slug">Технический код</label><input asp-for="NewCategory.Slug" placeholder="novaya-kategoriya" /><span asp-validation-for="NewCategory.Slug" class="field-error"></span></div>
+                <div class="field"><label asp-for="NewCategory.ParentId">Родительская категория</label><select asp-for="NewCategory.ParentId"><option value="">Верхний уровень</option>@foreach (var category in Model.Categories) { <option value="@category.Id">@category.Name</option> }</select></div>
+                <button class="ui-button primary" type="submit">Добавить категорию</button>
+            </form>
+        </section>
+        <section class="settings-card">
+            <h2>Опубликованные схемы</h2><p>Создание версии копирует текущие атрибуты. Следующий редактор атрибутов сможет изменить новую версию отдельно.</p>
+            <div class="admin-category-list">
+                @foreach (var item in Model.CategoriesWithSchemas)
+                {
+                    <div><span><strong>@item.Name</strong><small>@(item.Version is null ? "схема не задана" : $"версия {item.Version}")</small></span>
+                    <form method="post" asp-page-handler="CreateVersion"><input type="hidden" name="categoryId" value="@item.Id" /><button class="ui-button" type="submit">Новая версия</button></form></div>
+                }
+            </div>
+        </section>
+    </div>
+</main>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

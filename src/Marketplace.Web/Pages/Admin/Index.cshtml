@@ -1,0 +1,8 @@
+@page
+@model Marketplace.Web.Pages.Admin.IndexModel
+@{ ViewData["Title"] = "Административная платформа"; }
+<partial name="Shared/_AccountNav" /><main class="account-page page-shell admin-page"><partial name="_AdminNav" />
+<header class="account-title"><div><span class="eyebrow">M11 · Операционный центр</span><h1>Административная платформа</h1><p>Сводное состояние маркетплейса и быстрый переход к управлению.</p></div></header>
+<section class="admin-metrics"><article><strong>@Model.Users</strong><span>пользователей</span></article><article><strong>@Model.ActiveListings</strong><span>активных объявлений</span></article><article><strong>@Model.PendingModeration</strong><span>в очереди модерации</span></article><article><strong>@Model.Conversations</strong><span>диалогов</span></article><article><strong>@Model.Deals</strong><span>сделок</span></article><article><strong>@Model.SavedSearches</strong><span>сохранённых поисков</span></article><article><strong>@Model.AuditEventsToday</strong><span>событий аудита за 24 ч</span></article></section>
+<section class="detail-card"><h2>Объявления по статусам</h2><div class="admin-status-bars">@foreach (var item in Model.ListingsByStatus) { <div><span>@item.Key</span><progress value="@item.Value" max="@Math.Max(1, Model.ListingsByStatus.Values.Max())"></progress><strong>@item.Value</strong></div> }</div></section>
+</main>

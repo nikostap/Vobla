@@ -1,0 +1,18 @@
+@page
+@model Marketplace.Web.Pages.Account.SessionsModel
+@{ ViewData["Title"] = "Активные сессии"; }
+<partial name="Shared/_AccountNav" />
+<main class="account-page page-shell">
+    <header class="account-title account-title--simple"><div><span class="eyebrow">Безопасность</span><h1>Активные сессии</h1><p>Устройства, на которых выполнен вход в аккаунт.</p></div></header>
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice notice--success">@Model.StatusMessage</div> }
+    <section class="session-list">
+        @foreach (var session in Model.Sessions)
+        {
+            <article class="session-card">
+                <div class="session-icon" aria-hidden="true">▣</div>
+                <div><h2>@session.Device @if (session.IsCurrent) { <span class="ui-badge success">Текущая</span> }</h2><p>IP @session.IpAddress · вход @session.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p><small>Последняя активность @session.LastSeenAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small></div>
+                @if (!session.IsCurrent) { <form method="post" asp-page-handler="Revoke"><input type="hidden" name="sessionId" value="@session.Id" /><button class="ui-button danger" type="submit">Завершить</button></form> }
+            </article>
+        }
+    </section>
+</main>

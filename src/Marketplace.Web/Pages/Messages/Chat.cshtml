@@ -1,0 +1,137 @@
+@page
+@model Marketplace.Web.Pages.Messages.ChatModel
+@{
+    ViewData["Title"] = Model.Chat?.ListingTitle ?? "Чат";
+    var chatImages = Model.Chat?.Messages.SelectMany(message => message.Attachments).Where(file => file.MimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)).ToList() ?? [];
+}
+<partial name="Shared/_AccountNav" />
+<main class="chat-page page-shell">
+    @if (Model.Chat is not null)
+    {
+        <header class="chat-header">
+            <a class="chat-back-button" asp-page="/Messages/Index" aria-label="Вернуться к диалогам"><span aria-hidden="true">‹</span></a>
+            <div class="chat-header__listing">
+                <span class="eyebrow">Объявление</span>
+                <h1><a asp-page="/Listings/Details" asp-route-id="@Model.Chat.ListingId">@Model.Chat.ListingTitle</a></h1>
+                <p>@Model.Chat.Price · @Model.Chat.Status</p>
+            </div>
+            <div class="chat-person">
+                <a class="chat-seller-link" asp-page="/Sellers/Details" asp-route-id="@Model.Chat.SellerId">@Model.Chat.SellerName</a>
+                <span class="chat-seller-badge">✓ @(Model.Chat.SellerVerified ? "Проверенный продавец" : "Продавец")</span>
+                <small><i class="presence-dot"></i>@Model.Chat.OtherName · <span data-presence>не в сети</span></small>
+            </div>
+        </header>
+        @if (Model.Notice is not null) { <div class="notice notice--success">@Model.Notice</div> }
+        @if (Model.Error is not null) { <div class="notice notice--error">@Model.Error</div> }
+        <div class="chat-layout" data-conversation-id="@Model.Chat.Id" data-user-id="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
+            <section class="chat-main" aria-label="Переписка">
+                <ol class="message-list" data-message-list>
+                    @foreach (var message in Model.Chat.Messages)
+                    {
+                        <li class="@(message.SenderId?.ToString() == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ? "mine" : null)" data-message-id="@message.Id">
+                            <small>@message.Sender · @message.CreatedAt.ToLocalTime().ToString("HH:mm")</small>
+                            @if (!(message.Kind == "Attachment" && message.Text.StartsWith("Вложение:", StringComparison.Ordinal))) { <p>@message.Text</p> }
+                            @foreach (var file in message.Attachments)
+                            {
+                                @if (file.MimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var imageIndex = chatImages.FindIndex(image => image.Id == file.Id);
+                                    <button class="chat-image" type="button" data-chat-image-open data-gallery-index="@imageIndex" aria-label="Открыть изображение @file.Name">
+                                        <img src="@Url.Page("/Messages/Chat", "Attachment", new { attachmentId = file.Id })" alt="@file.Name" loading="lazy" />
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a class="message-attachment" asp-page-handler="Attachment" asp-route-attachmentId="@file.Id">📎 @file.Name <span>@(file.Size / 1024) КБ</span></a>
+                                }
+                            }
+                            @if (message.SenderId?.ToString() == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value) { <em>@(message.ReadAt is null ? "Доставлено" : "Прочитано")</em> }
+                        </li>
+                    }
+                </ol>
+                <div class="typing-indicator" data-typing aria-live="polite"></div>
+                @if (!Model.Chat.IsBlocked)
+                {
+                    <form method="post" asp-page-handler="Send" enctype="multipart/form-data" class="message-composer" data-message-form>
+                        <input type="hidden" name="id" value="@Model.Chat.Id" />
+                        <label class="composer-attach" aria-label="Добавить файлы"><span aria-hidden="true">📎</span><input type="file" name="Files" multiple accept="image/jpeg,image/png,image/webp,application/pdf,text/plain" /></label>
+                        <label class="visually-hidden" for="chat-message">Сообщение</label>
+                        <textarea id="chat-message" name="Text" maxlength="5000" placeholder="Напишите сообщение…"></textarea>
+                        <button class="ui-button primary message-send" type="submit">Отправить</button>
+                        <small class="composer-hint" data-selected-files>Ctrl+Enter — отправить · до 3 файлов по 20 МБ</small>
+                    </form>
+                }
+                else { <div class="notice notice--error">Обмен сообщениями заблокирован.</div> }
+            </section>
+            <aside class="chat-sidebar">
+                <div class="chat-sidebar__heading"><span class="eyebrow">Инструменты</span><h2>Быстрые ответы</h2></div>
+                @foreach (var template in Model.Templates) { <button type="button" class="template-button" data-template="@template.Text">@template.Title</button> }
+                <form method="post" asp-page-handler="SaveTemplate">
+                    <input type="hidden" name="id" value="@Model.Chat.Id" />
+                    <label>Название<input name="title" placeholder="Например, о доставке" /></label>
+                    <label>Текст ответа<textarea name="templateText" placeholder="Текст ответа" required></textarea></label>
+                    <button class="ui-button" type="submit">Сохранить шаблон</button>
+                </form>
+                @if (Model.Chat.IsSeller)
+                {
+                    <form method="post" asp-page-handler="AutoReply">
+                        <input type="hidden" name="id" value="@Model.Chat.Id" />
+                        <label class="filter-check"><input type="checkbox" name="enabled" value="true" /> Автоответ</label>
+                        <label>Текст автоответа<textarea name="autoReplyText" placeholder="Сейчас не в сети, отвечу позже"></textarea></label>
+                        <button class="ui-button" type="submit">Сохранить</button>
+                    </form>
+                }
+                <form method="post" asp-page-handler="Report" class="chat-safety-form">
+                    <input type="hidden" name="id" value="@Model.Chat.Id" />
+                    <label>Причина жалобы<input name="reason" placeholder="Кратко опишите нарушение" /></label>
+                    <button class="ui-button" type="submit">Пожаловаться</button>
+                </form>
+                <form method="post" asp-page-handler="Block" class="chat-block-form">
+                    <input type="hidden" name="id" value="@Model.Chat.Id" />
+                    <button class="ui-button danger" type="submit">Заблокировать</button>
+                </form>
+            </aside>
+        </div>
+        @if (chatImages.Count > 0)
+        {
+            <dialog class="photo-viewer chat-image-viewer" data-chat-image-viewer aria-label="Просмотр изображений из диалога">
+                <div class="photo-viewer__panel">
+                    <button class="photo-viewer__close" type="button" data-chat-image-close aria-label="Закрыть просмотр">×</button>
+                    <div class="photo-viewer__stage">
+                        @for (var imageIndex = 0; imageIndex < chatImages.Count; imageIndex++)
+                        {
+                            var image = chatImages[imageIndex];
+                            <img class="photo-viewer__image @(imageIndex == 0 ? "is-active" : null)" data-chat-viewer-image data-gallery-index="@imageIndex" src="@Url.Page("/Messages/Chat", "Attachment", new { attachmentId = image.Id })" alt="@image.Name" aria-hidden="@(imageIndex == 0 ? "false" : "true")" />
+                        }
+                        @if (chatImages.Count > 1)
+                        {
+                            <button class="photo-viewer__arrow photo-viewer__arrow--prev" type="button" data-chat-image-prev aria-label="Предыдущее изображение">‹</button>
+                            <button class="photo-viewer__arrow photo-viewer__arrow--next" type="button" data-chat-image-next aria-label="Следующее изображение">›</button>
+                        }
+                    </div>
+                    <div class="photo-viewer__footer"><span data-chat-image-counter>1 / @chatImages.Count</span></div>
+                </div>
+            </dialog>
+        }
+    }
+</main>
+@* Deal controls stay in the authenticated chat so buyer/seller identity is unambiguous. *@
+@if (Model.Chat is not null)
+{
+    <section class="deal-panel page-shell">
+        @if (!Model.Chat.IsSeller && Model.Chat.DealId is null && Model.Chat.Status == "Active")
+        {
+            <form method="post" asp-page-handler="RequestDeal"><input type="hidden" name="id" value="@Model.Chat.Id" /><button class="ui-button primary" type="submit">Я купил товар</button></form>
+        }
+        else if (Model.Chat.IsSeller && Model.Chat.DealStatus == "Requested")
+        {
+            <form method="post" asp-page-handler="ConfirmDeal"><input type="hidden" name="id" value="@Model.Chat.Id" /><button class="ui-button primary" type="submit">Подтвердить покупателя</button></form>
+        }
+        @if (Model.Chat.CanReview && !Model.Chat.HasReviewed)
+        {
+            <form method="post" asp-page-handler="Review" class="review-form"><input type="hidden" name="id" value="@Model.Chat.Id" /><label>Оценка<select name="rating"><option value="5">5 — отлично</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></label><label>Отзыв<textarea name="reviewText" maxlength="2000" required></textarea></label><button class="ui-button" type="submit">Оставить подтверждённый отзыв</button></form>
+        }
+        else if (Model.Chat.HasReviewed) { <span class="ui-badge">Отзыв оставлен</span> }
+    </section>
+}
+@section Scripts { <script src="~/js/chat.js" asp-append-version="true"></script> }

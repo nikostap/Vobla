@@ -1,0 +1,104 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "codex/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/UiTests/package-lock.json
+
+      - name: Restore and build
+        run: dotnet build Marketplace.slnx -c Release
+
+      - name: Reject vulnerable dependencies
+        shell: pwsh
+        run: ./scripts/dependency-audit.ps1
+
+      - name: Enforce architecture invariants
+        shell: pwsh
+        run: ./scripts/architecture-smoke.ps1
+
+      - name: Reject unsafe Production defaults
+        shell: pwsh
+        run: ./scripts/production-config-smoke.ps1
+
+      - name: Build and start hardened stack
+        run: docker compose up -d --build
+
+      - name: Wait for database-aware readiness
+        shell: bash
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5080/health/ready >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          docker compose ps
+          docker compose logs
+          exit 1
+
+      - name: Verify idempotent deployment seed command
+        run: docker compose exec -T marketplace-web dotnet Marketplace.Web.dll --seed-only
+
+      - name: Verify one-time Owner provisioning command
+        shell: pwsh
+        run: ./scripts/bootstrap-owner-smoke.ps1
+
+      - name: Install Playwright
+        working-directory: tests/UiTests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run UI and security regression
+        working-directory: tests/UiTests
+        run: npm test
+
+      - name: Verify OTP survives application restart
+        shell: pwsh
+        run: ./scripts/otp-restart-drill.ps1
+
+      - name: Verify database outage readiness and recovery
+        shell: pwsh
+        run: ./scripts/readiness-failure-drill.ps1
+
+      - name: Capture container logs
+        if: failure()
+        run: docker compose logs --no-color > container-logs.txt
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ci-failure-artifacts
+          if-no-files-found: ignore
+          path: |
+            tests/UiTests/playwright-report/
+            tests/UiTests/test-results/
+            container-logs.txt
+          retention-days: 7
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down --volumes

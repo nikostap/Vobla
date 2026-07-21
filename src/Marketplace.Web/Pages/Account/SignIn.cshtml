@@ -1,0 +1,78 @@
+@page
+@model Marketplace.Web.Pages.Account.SignInModel
+@{
+    ViewData["Title"] = "Вход и регистрация";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="account-page page-shell">
+    <section class="auth-card auth-card--welcome" aria-labelledby="sign-in-title">
+        <span class="eyebrow">Один экран для всех</span>
+        <h1 id="sign-in-title">Войти или создать аккаунт</h1>
+        <p class="account-lead">Введите email или российский номер телефона — вход и регистрация подтверждаются одноразовым кодом.</p>
+
+        <div class="auth-choice-grid" aria-label="Как работает вход и регистрация">
+            <article>
+                <strong>Уже есть аккаунт</strong>
+                <p>После подтверждения кода вы сразу войдёте в свой профиль.</p>
+            </article>
+            <article>
+                <strong>Регистрируетесь впервые</strong>
+                <p>Если такого email ещё нет, аккаунт создастся автоматически. Отдельная форма регистрации не нужна.</p>
+            </article>
+        </div>
+
+        @if (Model.RegistrationRestricted)
+        {
+            <div class="notice notice--warning">Сейчас действует закрытая регистрация: новому пользователю понадобится код приглашения.</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+        {
+            <div class="notice @(Model.HasError ? "notice--error" : "notice--success")" role="status">@Model.StatusMessage</div>
+        }
+
+        <form method="post" asp-page-handler="SendCode" class="account-form">
+            <input asp-for="ReturnUrl" type="hidden" />
+            <div class="field">
+                <label asp-for="Email">Email</label><small>или российский номер телефона</small>
+                <input asp-for="Email" type="text" autocomplete="username" placeholder="name@example.ru или +7 (999) 999-99-99" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+            <button class="ui-button primary" type="submit">Получить код</button>
+        </form>
+
+        @if (Model.CodeSent)
+        {
+            @if (!string.IsNullOrWhiteSpace(Model.DemoCode))
+            {
+                <div class="demo-code" data-testid="demo-code">
+                    <span>Тестовый код для локального запуска</span>
+                    <strong>@Model.DemoCode</strong>
+                    <small>В рабочей версии код придёт на указанный email. Он действует 10 минут.</small>
+                </div>
+            }
+            <form method="post" asp-page-handler="Verify" class="account-form">
+                <input asp-for="Email" type="hidden" />
+                <input asp-for="ReturnUrl" type="hidden" />
+                @if (Model.RegistrationRestricted)
+                {
+                    <div class="field">
+                        <label asp-for="InviteCode">Код приглашения для нового аккаунта</label>
+                        <input asp-for="InviteCode" autocomplete="off" />
+                        <span asp-validation-for="InviteCode" class="field-error"></span>
+                    </div>
+                }
+                <div class="field">
+                    <label asp-for="Code">Одноразовый код</label>
+                    <input asp-for="Code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" />
+                    <span asp-validation-for="Code" class="field-error"></span>
+                </div>
+                <button class="ui-button primary" type="submit">Войти или зарегистрироваться</button>
+            </form>
+        }
+    </section>
+</main>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

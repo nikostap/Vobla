@@ -1,0 +1,36 @@
+@page
+@model Marketplace.Web.Pages.Messages.IndexModel
+@{ ViewData["Title"] = "Сообщения"; }
+<partial name="Shared/_AccountNav" />
+<main class="messages-page page-shell">
+    <header class="directory-title messages-title">
+        <span class="eyebrow">Чат</span>
+        <h1>Сообщения</h1>
+        <p>Диалоги по объявлениям сохраняются и доступны после повторного входа.</p>
+    </header>
+    <section class="dialog-list" aria-label="Список диалогов">
+        @foreach (var item in Model.Dialogs)
+        {
+            <a class="dialog-card" asp-page="/Messages/Chat" asp-route-id="@item.Id">
+                <span class="dialog-thumb">
+                    @if (item.Image is not null) { <img src="@item.Image" alt="" /> }
+                    else { <span aria-hidden="true">💬</span> }
+                </span>
+                <span class="dialog-card__content">
+                    <strong>@item.ListingTitle</strong>
+                    <small>@item.OtherName</small>
+                    <p>@item.LastMessage</p>
+                </span>
+                <span class="dialog-meta">
+                    <time>@item.UpdatedAt.ToLocalTime().ToString("dd.MM HH:mm")</time>
+                    @if (item.Unread > 0) { <b aria-label="Непрочитанных сообщений: @item.Unread">@item.Unread</b> }
+                    <i class="dialog-open-arrow" aria-hidden="true">›</i>
+                </span>
+            </a>
+        }
+        @if (Model.Dialogs.Count == 0)
+        {
+            <div class="state-panel"><div><div class="state-panel__icon">✉</div><h2>Диалогов пока нет</h2><p>Откройте активное объявление и напишите продавцу.</p><a class="ui-button primary" asp-page="/Index">Найти объявление</a></div></div>
+        }
+    </section>
+</main>

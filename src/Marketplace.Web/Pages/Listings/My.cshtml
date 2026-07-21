@@ -1,0 +1,86 @@
+@page
+@model Marketplace.Web.Pages.Listings.MyModel
+@{
+    ViewData["Title"] = "Мои объявления";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="listing-wizard page-shell">
+    <header class="directory-title">
+        <span class="eyebrow">Личный кабинет</span>
+        <h1>Мои объявления</h1>
+        <p>Черновики, отправленные на проверку и опубликованные объявления.</p>
+        <a class="ui-button primary" asp-page="/Listings/Create">Подать объявление</a>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="notice notice--success" role="status">@Model.StatusMessage</div>
+    }
+
+    @if (Model.Listings.Count == 0)
+    {
+        <div class="state-panel"><div><div class="state-panel__icon">＋</div><h2>Объявлений пока нет</h2><p>Создайте первое объявление — оно сохранится как черновик.</p><a class="ui-button primary" asp-page="/Listings/Create">Создать объявление</a></div></div>
+    }
+    else
+    {
+        <section class="my-listings">
+            @foreach (var item in Model.Listings)
+            {
+                <article>
+                    <div class="listing-media-placeholder">
+                        @if (item.ImageUrl is not null) { <img src="@item.ImageUrl" alt="@item.Title" /> }
+                        else { <span>Фото</span> }
+                    </div>
+                    <div>
+                        <span class="ui-badge">@item.StatusLabel</span>
+                        <h2>@item.Title</h2>
+                        <strong>@item.PriceLabel</strong>
+                        <p>@item.CategoryName · обновлено @item.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+                    </div>
+                    <div class="my-listing-actions">
+                        <a class="ui-button" asp-page="/Listings/Details" asp-route-id="@item.Id">Открыть</a>
+                        <details class="danger-disclosure">
+                            <summary>Удалить</summary>
+                            <form method="post" asp-page-handler="Delete">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <p>Объявление исчезнет из каталога, избранного и сравнения. Это действие нельзя отменить.</p>
+                                <label class="filter-check"><input type="checkbox" name="confirm" value="true" required /> Подтверждаю удаление</label>
+                                <button class="ui-button danger" type="submit">Удалить объявление</button>
+                            </form>
+                        </details>
+                    </div>
+                </article>
+            }
+        </section>
+    }
+
+    <section class="my-view-history" aria-labelledby="recently-viewed-heading">
+        <div class="section-heading">
+            <div><span class="eyebrow">История</span><h2 id="recently-viewed-heading">Недавно просмотренные</h2><p>Объявления, которые вы открывали за последние 30 дней.</p></div>
+            <a asp-page="/Recommendations">Управлять историей</a>
+        </div>
+        @if (!Model.PersonalizationEnabled)
+        {
+            <div class="notice">История просмотров выключена в настройках приватности. <a asp-page="/Account/Profile">Включить в профиле</a></div>
+        }
+        else if (Model.RecentlyViewed.Count == 0)
+        {
+            <div class="state-panel state-panel--compact"><div><h3>История пока пуста</h3><p>Откройте несколько объявлений — они появятся здесь.</p><a class="ui-button" asp-page="/Index">Перейти к объявлениям</a></div></div>
+        }
+        else
+        {
+            <div class="recommendation-grid recently-viewed-grid" data-paged-list data-page-size="10" data-pager-label="Страницы истории просмотров">
+                @foreach (var item in Model.RecentlyViewed)
+                {
+                    <a class="recommendation-card" data-page-item asp-page="/Listings/Details" asp-route-id="@item.Id">
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl)) { <img src="@item.ImageUrl" alt="" loading="lazy" /> }
+                        else { <span class="recommendation-card__placeholder" aria-hidden="true">Фото</span> }
+                        <span><strong>@item.PriceLabel</strong><b>@item.Title</b><small>@item.City · @item.ViewedAt.ToLocalTime().ToString("dd.MM HH:mm")</small></span>
+                    </a>
+                }
+            </div>
+        }
+    </section>
+</main>

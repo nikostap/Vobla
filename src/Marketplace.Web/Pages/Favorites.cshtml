@@ -1,0 +1,61 @@
+@page
+@model Marketplace.Web.Pages.FavoritesModel
+@{
+    ViewData["Title"] = "Избранное";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="account-page page-shell">
+    <header class="directory-title">
+        <span class="eyebrow">Подборка</span>
+        <h1>Избранное</h1>
+        <p>Сохранённые объявления и цена на момент добавления.</p>
+    </header>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <div class="notice notice--success" role="status">@notice</div>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="state-panel">
+            <div>
+                <div class="state-panel__icon">♡</div>
+                <h2>Список пуст</h2>
+                <p>Добавляйте объявления из каталога или со страницы товара.</p>
+                <a class="ui-button primary" asp-page="/Index">Найти объявления</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <section class="favorite-grid">
+            @foreach (var item in Model.Items)
+            {
+                <article class="favorite-card">
+                    <a class="favorite-card__main" asp-page="/Listings/Details" asp-route-id="@item.Id">
+                        <span class="listing-media-placeholder">
+                            @if (item.Image is not null) { <img src="@item.Image" alt="@item.Title" loading="lazy" /> }
+                        </span>
+                        <span class="favorite-card__body">
+                            <span class="ui-badge">@item.Status</span>
+                            <h2 class="favorite-card__title">@item.Title</h2>
+                            <small>@item.Category</small>
+                            <b>@item.Price</b>
+                            @if (item.OldPrice is not null) { <small>При добавлении: @item.OldPrice.Value.ToString("N0") ₽</small> }
+                        </span>
+                    </a>
+                    <div class="favorite-card__footer">
+                        <a asp-page="/Sellers/Details" asp-route-id="@item.SellerId">@item.SellerName</a>
+                        <form method="post" asp-page-handler="Remove">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button class="ui-button ghost" type="submit">Удалить</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </section>
+    }
+</main>

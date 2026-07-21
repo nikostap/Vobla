@@ -1,0 +1,134 @@
+project:
+  working_name: "Marketplace"
+  product_type: "Федеральный сервис частных объявлений"
+  country: "Россия"
+  primary_audience: "Частные лица"
+  owner_team:
+    - "Владелец проекта"
+    - "Codex"
+  initial_budget: 0
+  first_year_targets:
+    registered_users: 1000
+    active_listings: 10000
+
+product_principles:
+  - "Простой и быстрый сценарий подачи объявления"
+  - "Каждое решение модерации имеет понятную причину"
+  - "Объявления и фотографии важнее рекламы интерфейса"
+  - "Платные услуги не прерывают создание объявления"
+  - "После каждого этапа разработки доступен проверяемый сайт"
+  - "Мобильное приложение будет позже, API закладывается сразу"
+
+geography:
+  coverage: "Вся Россия"
+  city_detection_priority:
+    - "Сохранённый выбор пользователя"
+    - "Геолокация браузера с разрешения"
+    - "IP-геолокация"
+    - "Москва как fallback"
+  default_radius_km: 30
+  fallback_scope: "Вся Россия"
+  map_provider_preference: "Яндекс Карты"
+  exact_address_public_only_with_consent: true
+  subway_search: true
+  route_search: false
+  multiple_pickup_points: true
+
+identity:
+  registration_methods:
+    - "Email с одноразовым кодом"
+    - "Телефон с одноразовым кодом"
+  phone_required_for_listing: false
+  one_phone_per_account: true
+  corporate_shared_accounts: false
+  identity_verification_status: true
+  child_account_required: true
+
+listings:
+  active_days: 30
+  free_active_limit: 10
+  max_photos: 10
+  auto_renew_supported: true
+  price_modes:
+    - "FIXED"
+    - "FREE"
+    - "EXCHANGE"
+    - "EXCHANGE_WITH_SURCHARGE"
+    - "ON_REQUEST_WHERE_ALLOWED"
+  auctions: false
+  category_change_policy: "Создать новое объявление, архивировать старое, сбросить просмотры и избранное"
+  price_change_requires_remoderation: false
+  all_other_public_changes_require_remoderation: true
+
+search:
+  user_selects_sorting: true
+  default_sort: "RECOMMENDED"
+  promoted_results: "Отдельный маркированный блок сверху"
+  guest_personalization: "Cookie/local identifier с согласием"
+  history_retention_days: 30
+  personalization_opt_out: true
+  image_search_future: true
+  llm_query_correction_future: true
+
+messaging:
+  conversation_participants: 2
+  realtime: "SignalR"
+  max_attachment_mb: 20
+  external_links_allowed: false
+  images_allowed: true
+  documents_allowed: true
+  voice_messages_future: true
+  voice_transcription_future: true
+  internet_calls_future: true
+  typing_indicator: true
+  online_status: true
+  message_templates: true
+  offline_autoreply: true
+
+moderation:
+  automatic_check_always: true
+  manual_check_policy: "Обязательно для новых и рискованных публикаций; доверенные низкорисковые могут публиковаться автоматически через feature flag"
+  target_first_review_minutes: 60
+  appeals_max_business_days: 45
+  warnings_default: 3
+  severity_overrides_warning_count: true
+  retain_evidence: true
+
+monetization:
+  free_plan_active_listings: 10
+  monthly_subscription_possible: true
+  annual_subscription_possible: true
+  trial: false
+  promo_codes: true
+  bonus_discount_system: true
+  real_payments_initially_disabled: true
+  safe_deal_future: true
+  delivery_future: true
+
+technology:
+  backend: ".NET / ASP.NET Core / C#"
+  ui: "Razor server-rendered UI + TypeScript for interactive areas"
+  realtime: "SignalR"
+  architecture: "Модульный монолит"
+  database: "PostgreSQL + PostGIS"
+  cache: "Redis when needed"
+  object_storage: "S3-compatible storage"
+  search_phase_1: "PostgreSQL full-text + trigram + PostGIS"
+  search_phase_2: "OpenSearch when justified"
+  hosting_country: "Россия"
+  environments:
+    - "Development"
+    - "Staging"
+    - "Production"
+  backups: "Ежедневно + point-in-time recovery when production-ready"
+
+visual_design:
+  direction: "Тёплый функциональный минимализм"
+  base_reference: "assets/design-reference.png"
+  light_theme: true
+  dark_theme: true
+  card_image_ratio: "4:3"
+  card_total_visual_ratio: "примерно 3:4"
+  border_radius_px: 12
+  primary_accent: "тёплый медно-коричневый"
+  map_list_linked_hover: true

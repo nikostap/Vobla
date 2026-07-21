@@ -1,0 +1,80 @@
+@page
+@model Marketplace.Web.Pages.CompareModel
+@{
+    ViewData["Title"] = "Сравнение";
+    var onlyDiff = Request.Query["onlyDifferences"] == "true";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="account-page page-shell">
+    <header class="directory-title">
+        <span class="eyebrow">Выбор</span>
+        <h1>Сравнение</h1>
+        <p>В одной таблице — объявления одной категории.</p>
+    </header>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <div class="notice notice--success" role="status">@notice</div>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="state-panel">
+            <div>
+                <div class="state-panel__icon">⇄</div>
+                <h2>Нечего сравнивать</h2>
+                <p>Добавьте два или больше объявления одной категории.</p>
+                <a class="ui-button primary" asp-page="/Index">Выбрать объявления</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (Model.Items.Count == 1)
+        {
+            <div class="notice notice--action">Добавьте ещё одно объявление этой категории, чтобы увидеть различия.</div>
+        }
+        else
+        {
+            <form method="get" class="compare-toggle">
+                <label class="filter-check"><input type="checkbox" name="onlyDifferences" value="true" checked="@onlyDiff" /> Показывать только различия</label>
+                <button class="ui-button" type="submit">Применить</button>
+            </form>
+        }
+
+        <div class="compare-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Параметр</th>
+                        @foreach (var item in Model.Items)
+                        {
+                            <th>
+                                <a asp-page="/Listings/Details" asp-route-id="@item.Id">@item.Title</a>
+                                <form method="post" asp-page-handler="Remove">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button class="ui-button ghost" type="submit">Убрать</button>
+                                </form>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><th>Цена</th>@foreach (var item in Model.Items) { <td>@item.Price</td> }</tr>
+                    <tr><th>Продавец</th>@foreach (var item in Model.Items) { <td><a asp-page="/Sellers/Details" asp-route-id="@item.SellerId">@item.Seller</a></td> }</tr>
+                    <tr><th>Состояние</th>@foreach (var item in Model.Items) { <td>@item.Condition</td> }</tr>
+                    @foreach (var name in Model.AttributeNames)
+                    {
+                        var values = Model.Items.Select(x => x.Attributes.GetValueOrDefault(name, "—")).ToList();
+                        if (!onlyDiff || values.Distinct().Count() > 1)
+                        {
+                            <tr><th>@name</th>@foreach (var value in values) { <td>@value</td> }</tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</main>

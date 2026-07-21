@@ -1,0 +1,15 @@
+{
+  "name": "marketplace-map-assets",
+  "private": true,
+  "scripts": {
+    "build:map": "esbuild frontend/marketplace-map.js --bundle --minify --outfile=src/Marketplace.Web/wwwroot/vendor/marketplace-map.bundle.js"
+  },
+  "dependencies": {
+    "@protomaps/basemaps": "5.6.0",
+    "maplibre-gl": "5.6.2",
+    "pmtiles": "4.3.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.6"
+  }
+}

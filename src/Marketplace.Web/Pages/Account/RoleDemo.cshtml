@@ -1,0 +1,20 @@
+@page
+@model Marketplace.Web.Pages.Account.RoleDemoModel
+@{ ViewData["Title"] = "Роли и аудит"; }
+<partial name="Shared/_AccountNav" />
+<main class="account-page page-shell">
+    <header class="account-title account-title--simple"><div><span class="eyebrow">Административная демонстрация</span><h1>Роли и аудит</h1><p>Текущая модель доступа этапа M2.</p></div></header>
+    <div class="role-grid">
+        @foreach (var role in Model.Roles)
+        {
+            <article class="role-card @(role.IsCurrent ? "role-card--current" : null)"><span class="ui-badge @(role.IsCurrent ? "success" : null)">@(role.IsCurrent ? "Назначена" : "Доступна")</span><h2>@role.Title</h2><p>@role.Description</p></article>
+        }
+    </div>
+    <section class="settings-card audit-card">
+        <h2>Последние события аккаунта</h2>
+        <div class="audit-list">
+            @foreach (var item in Model.AuditEvents) { <div><span>@item.EventType</span><strong>@item.Detail</strong><time>@item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time></div> }
+        </div>
+    </section>
+    @if (User.IsInRole("Administrator")) { <p class="settings-actions"><a class="ui-button primary" asp-page="/Admin/Catalog">Открыть редактор каталога</a></p> }
+</main>

@@ -1,0 +1,20 @@
+<header class="account-header">
+    <div class="page-shell account-header__inner">
+        <a class="brand" asp-page="/Index" aria-label="Marketplace, на главную">
+            <span class="brand-mark"><span>m</span></span>
+            <span class="brand-name">Marketplace</span>
+        </a>
+        <nav class="account-nav" aria-label="Личный кабинет">
+            @if (User.Identity?.IsAuthenticated == true) { <a asp-page="/Account/Profile">Профиль</a><a asp-page="/Listings/My">Мои объявления</a> }
+            @if (User.Identity?.IsAuthenticated == true) { <a asp-page="/Messages/Index">Сообщения</a> }
+            @if (User.Identity?.IsAuthenticated == true) { <a asp-page="/Favorites">Избранное</a><a asp-page="/Notifications">Уведомления</a> }
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-page="/Account/Sessions">Сессии</a>
+                <a asp-page="/Account/Data">Данные</a>
+                @if (User.IsInRole("Moderator") || User.IsInRole("Administrator")) { <a asp-page="/Account/RoleDemo">Роли</a><a asp-page="/Admin/Index">Администрирование</a> }
+            }
+            <button class="header-action theme-toggle" type="button" aria-label="Переключить тему" title="Переключить тему">◐</button>
+        </nav>
+    </div>
+</header>

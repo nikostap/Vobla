@@ -1,0 +1,49 @@
+@page
+@model Marketplace.Web.Pages.CatalogModel
+@{ ViewData["Title"] = "Каталог"; }
+<partial name="Shared/_AccountNav" />
+<main class="catalog-directory page-shell">
+    <header class="directory-title"><span class="eyebrow">Управляемый каталог</span><h1>Выберите категорию</h1><p>Структура и характеристики загружаются из базы данных и могут изменяться без перекомпиляции.</p></header>
+    <div class="directory-layout">
+        <section class="directory-tree" aria-label="Категории">
+            @foreach (var root in Model.Roots)
+            {
+                <details open="@(Model.SelectedSlug is null || root.ContainsSelection)">
+                    <summary><a asp-route-slug="@root.Slug">@root.Name</a><span>@root.Children.Count</span></summary>
+                    @if (root.Children.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var child in root.Children)
+                            {
+                                <li><a class="@(child.Slug == Model.SelectedSlug ? "active" : null)" asp-route-slug="@child.Slug">@child.Name</a>
+                                    @if (child.Children.Count > 0) { <ul>@foreach (var leaf in child.Children) { <li><a class="@(leaf.Slug == Model.SelectedSlug ? "active" : null)" asp-route-slug="@leaf.Slug">@leaf.Name</a></li> }</ul> }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </details>
+            }
+        </section>
+        <section class="schema-preview">
+            @if (Model.Selected is null)
+            {
+                <div class="state-panel"><div><div class="state-panel__icon">⌘</div><h2>Выберите глубокую категорию</h2><p>Для проработанных веток отобразится динамическая форма атрибутов.</p></div></div>
+            }
+            else
+            {
+                <span class="eyebrow">Версия схемы @Model.Selected.Version</span><h2>@Model.Selected.CategoryName</h2><p>Предпросмотр формы для будущего объявления.</p>
+                <form class="attribute-form">
+                    @foreach (var field in Model.Selected.Attributes)
+                    {
+                        <div class="field">
+                            <label>@field.Name @if (field.IsRequired) { <em>*</em> }</label>
+                            @if (field.Options.Count > 0)
+                            { <select aria-label="@field.Name"><option value="">Выберите значение</option>@foreach (var option in field.Options) { <option>@option</option> }</select> }
+                            else { <input aria-label="@field.Name" type="@(field.DataType is "integer" or "decimal" ? "number" : "text")" placeholder="@(field.Unit is null ? "Введите значение" : $"в {field.Unit}")" /> }
+                        </div>
+                    }
+                </form>
+            }
+        </section>
+    </div>
+</main>

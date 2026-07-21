@@ -1,0 +1,58 @@
+@page
+@model Marketplace.Web.Pages.Admin.UsersModel
+@{
+    ViewData["Title"] = "Пользователи и роли";
+}
+
+<partial name="Shared/_AccountNav" />
+
+<main class="account-page page-shell admin-page">
+    <partial name="_AdminNav" />
+    <header class="account-title">
+        <div>
+            <span class="eyebrow">Доступ команды</span>
+            <h1>Пользователи и роли</h1>
+            <p>Здесь администратор назначает и снимает роль модератора. Каждое изменение требует причины и записывается в аудит.</p>
+        </div>
+        <form method="get" class="admin-user-search">
+            <input type="search" name="q" value="@Request.Query["q"]" placeholder="Email или имя" aria-label="Email или имя пользователя" />
+            <button class="ui-button" type="submit">Найти</button>
+        </form>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="notice notice--success" role="status">@Model.StatusMessage</div>
+    }
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead><tr><th>Пользователь</th><th>Город</th><th>Текущие роли</th><th>Доступ к модерации</th></tr></thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td><strong>@user.DisplayName</strong><small>@user.Email · @user.RegisteredAt.ToLocalTime().ToString("dd.MM.yyyy")</small></td>
+                        <td>@user.City</td>
+                        <td>
+                            <span class="role-badges">
+                                @foreach (var role in user.Roles) { <span class="ui-badge">@role</span> }
+                            </span>
+                        </td>
+                        <td>
+                            <form method="post" asp-page-handler="Moderator" class="moderator-role-form">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <input type="hidden" name="enabled" value="@(user.IsModerator ? "false" : "true")" />
+                                <label>
+                                    <span>Причина изменения</span>
+                                    <input name="reason" required minlength="5" maxlength="500" placeholder="Например: принят в команду модерации" />
+                                </label>
+                                <button class="ui-button @(user.IsModerator ? "danger" : "primary")" type="submit">@(user.IsModerator ? "Снять роль модератора" : "Назначить модератором")</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</main>

@@ -1,0 +1,12 @@
+@page
+@{
+    ViewData["Title"] = "Cookie и сессии";
+}
+<main class="legal-page page-shell">
+    <header class="legal-page__header"><span class="eyebrow">Pre-release · редакция от 19.07.2026</span><h1>Cookie и сессии</h1><p>В текущем контуре нет рекламных или сторонних аналитических cookies. Используются технические данные, необходимые для входа, защиты форм и сохранения выбранного интерфейса.</p></header>
+    <section><h2>Обязательные cookies</h2><dl class="legal-table"><div><dt>Сессия входа</dt><dd>Связывает браузер с отзывной серверной сессией. HttpOnly; в Production — Secure и host-only.</dd></div><div><dt>Защита формы</dt><dd>Antiforgery cookie предотвращает отправку изменяющих запросов с постороннего сайта. HttpOnly и SameSite Strict.</dd></div></dl></section>
+    <section><h2>Настройки каталога</h2><p>Выбранный город, режим карты и сортировка могут сохраняться до 365 дней в first-party cookies. Они не используются для межсайтового отслеживания.</p></section>
+    <section><h2>Хранилище браузера</h2><p>Светлая или тёмная тема сохраняется в localStorage под ключом <code>marketplace-theme</code>. Это значение остаётся только в браузере и может быть удалено через настройки сайта.</p></section>
+    <section><h2>Управление</h2><p>Удаление технических cookies завершит вход и может сбросить настройки каталога. Отдельные серверные сессии можно отозвать на странице «Сессии» в профиле.</p></section>
+    <nav class="legal-page__next" aria-label="Связанные документы"><a asp-page="/Privacy">Конфиденциальность</a><a asp-page="/Terms">Условия использования</a></nav>
+</main>

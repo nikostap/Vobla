@@ -1,0 +1,8 @@
+@page
+@model Marketplace.Web.Pages.Admin.PrivacyModel
+@{ ViewData["Title"] = "Запросы приватности"; }
+<partial name="Shared/_AccountNav" /><main class="account-page page-shell admin-page"><partial name="_AdminNav" />
+<header class="account-title"><div><span class="eyebrow">Privacy operations</span><h1>Запросы на удаление</h1><p>Решение фиксируется в аудите. Эта очередь не выполняет физическое удаление автоматически.</p></div></header>
+@if (Model.Requests.Count == 0) { <div class="empty-state"><strong>Открытых запросов нет</strong><p>Новые обращения появятся здесь.</p></div> }
+else { <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Пользователь</th><th>Запрошено</th><th>Статус</th><th>Решение</th></tr></thead><tbody>@foreach (var item in Model.Requests) { <tr><td><strong>@item.DisplayName</strong><small>@item.Email</small></td><td>@item.RequestedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td><td><span class="ui-badge">@item.Status</span></td><td><form method="post" asp-page-handler="Resolve"><input type="hidden" name="id" value="@item.Id" /><input name="note" required minlength="5" maxlength="1000" placeholder="Основание решения" /><button class="ui-button primary" name="approve" value="true" type="submit">Подтвердить</button><button class="ui-button" name="approve" value="false" type="submit">Отклонить</button></form></td></tr> }</tbody></table></div> }
+</main>

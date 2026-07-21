@@ -1,0 +1,237 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Объявления рядом";
+    var currentUrl = $"{Request.Path}{Request.QueryString}";
+    const int primaryCategoryCount = 7;
+    var categoriesExpanded = Model.HeaderCategories.Skip(primaryCategoryCount).Any(x => x.Slug == Model.SelectedRootCategorySlug);
+}
+
+<svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path><path d="M8 9h8M8 13h5"></path></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"></path></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"></path><circle cx="4.5" cy="6" r="1"></circle><circle cx="4.5" cy="12" r="1"></circle><circle cx="4.5" cy="18" r="1"></circle></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h5M15 6h5M4 12h10M18 12h2M4 18h2M12 18h8"></path><circle cx="12" cy="6" r="2"></circle><circle cx="16" cy="12" r="2"></circle><circle cx="9" cy="18" r="2"></circle></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m6 12 4 4 8-9"></path></symbol>
+    <symbol id="i-theme" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8Z"></path></symbol>
+    <symbol id="i-components" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect><path d="M14 17.5h7M17.5 14v7"></path></symbol>
+</svg>
+
+<header class="site-header">
+    <div class="header-main page-shell">
+        <a class="brand" href="/" aria-label="Marketplace, на главную">
+            <span class="brand-mark"><span>m</span></span>
+            <span class="brand-name">Marketplace</span>
+        </a>
+
+        <form class="global-search" role="search" action="/" method="get">
+            <label class="visually-hidden" for="q">Поиск по объявлениям</label>
+            <input id="q" name="q" type="search" value="@Model.Query" placeholder="Поиск по объявлениям" autocomplete="off" />
+            <input type="hidden" name="address" value="@Model.SelectedAddress" /><input type="hidden" name="latitude" value="@(Model.SelectedLatitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))" /><input type="hidden" name="longitude" value="@(Model.SelectedLongitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))" /><input type="hidden" name="radius" value="@Model.Radius" />
+            <button type="submit" aria-label="Найти"><svg><use href="#i-search"></use></svg></button>
+        </form>
+
+        <button class="city-button" type="button" data-dialog-open="city-dialog" title="@Model.SelectedAddress">
+            <svg><use href="#i-pin"></use></svg><span>@Model.SelectedAddress</span><svg class="chevron"><use href="#i-chevron"></use></svg>
+        </button>
+
+        <nav class="user-actions" aria-label="Пользовательское меню">
+            <button class="header-action theme-toggle" type="button" aria-label="Переключить тему" title="Переключить тему"><svg><use href="#i-theme"></use></svg></button>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="header-action" asp-page="/Favorites" aria-label="Избранное"><svg><use href="#i-heart"></use></svg><span>Избранное</span>@if (Model.FavoriteCount > 0) { <b>@Math.Min(Model.FavoriteCount, 99)</b> }</a>
+                <a class="header-action messages" asp-page="/Messages/Index" aria-label="Сообщения"><svg><use href="#i-message"></use></svg><span>Сообщения</span>@if (Model.UnreadMessageCount > 0) { <b>@Math.Min(Model.UnreadMessageCount, 99)</b> }</a>
+                <a class="profile-action" asp-page="/Account/Profile"><span class="avatar">Я</span><span>Профиль</span><svg class="chevron"><use href="#i-chevron"></use></svg></a>
+                <a class="publish-button" asp-page="/Listings/Create"><svg><use href="#i-plus"></use></svg><span>Подать объявление</span></a>
+            }
+            else
+            {
+                <a class="header-action" asp-page="/Account/SignIn" asp-route-ReturnUrl="/Favorites" aria-label="Избранное"><svg><use href="#i-heart"></use></svg><span>Избранное</span></a>
+                <a class="header-action messages" asp-page="/Account/SignIn" asp-route-ReturnUrl="/Messages" aria-label="Сообщения"><svg><use href="#i-message"></use></svg><span>Сообщения</span></a>
+                <a class="profile-action" asp-page="/Account/SignIn"><span class="avatar">→</span><span>Войти</span></a>
+                <a class="publish-button" asp-page="/Account/SignIn" asp-route-ReturnUrl="/Listings/Create"><svg><use href="#i-plus"></use></svg><span>Подать объявление</span></a>
+            }
+        </nav>
+    </div>
+
+    <div class="category-navigation">
+        <div class="category-strip-wrap page-shell" data-category-strip data-expanded="@categoriesExpanded.ToString().ToLowerInvariant()">
+            <nav class="category-strip" aria-label="Категории">
+                <a class="category-chip @(string.IsNullOrWhiteSpace(Model.Category) ? "active" : null)" asp-page="/Index"><span class="category-icon" aria-hidden="true">⌘</span><span>Все категории</span></a>
+                @for (var categoryIndex = 0; categoryIndex < Model.HeaderCategories.Count; categoryIndex++)
+                {
+                    var category = Model.HeaderCategories[categoryIndex];
+                    <a class="category-chip @(categoryIndex >= primaryCategoryCount ? "category-chip--extra" : null) @(Model.SelectedRootCategorySlug == category.Slug ? "active" : null)" asp-page="/Index" asp-route-category="@category.Slug"><span class="category-icon" aria-hidden="true">@category.Name[..1]</span><span>@category.Name</span></a>
+                }
+            </nav>
+            @if (Model.HeaderCategories.Count > primaryCategoryCount)
+            {
+                <button class="category-chip more" type="button" data-category-more aria-expanded="@categoriesExpanded.ToString().ToLowerInvariant()"><span>@(categoriesExpanded ? "Свернуть" : "Ещё")</span><svg class="chevron"><use href="#i-chevron"></use></svg></button>
+            }
+        </div>
+        @if (Model.Subcategories.Count > 0 && Model.SelectedRootCategorySlug is not null)
+        {
+            <nav class="subcategory-strip page-shell" aria-label="Подкатегории">
+                <a class="subcategory-chip @(Model.SelectedSubcategorySlug is null ? "active" : null)" asp-page="/Index" asp-route-category="@Model.SelectedRootCategorySlug">Все</a>
+                @foreach (var subcategory in Model.Subcategories)
+                {
+                    <a class="subcategory-chip @(Model.SelectedSubcategorySlug == subcategory.Slug ? "active" : null)" asp-page="/Index" asp-route-category="@subcategory.Slug">@subcategory.Name</a>
+                }
+            </nav>
+        }
+    </div>
+</header>
+
+<main class="page-shell catalog-page" id="catalog">
+    @if (TempData["Notice"] is string notice) { <div class="notice notice--success" role="status">@notice</div> }
+    <section class="catalog-toolbar" aria-labelledby="results-heading">
+        <div class="results-title">
+            <h1 id="results-heading">@(Model.SelectedCategoryName is null ? "Результаты поиска" : $"Объявления: {Model.SelectedCategoryName}")</h1>
+            <span>Найдено @Model.Total объявлений · @(Model.FromDatabase ? "база данных" : "demo-каталог")</span>
+        </div>
+        <div class="display-controls">
+            <form method="get" class="sort-form" data-sort-form data-clean-query>
+                @foreach (var queryField in Request.Query.Where(x => !x.Key.Equals("sort", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(x.Value.ToString()))) { <input type="hidden" name="@queryField.Key" value="@queryField.Value" /> }
+                <span class="sort-select-wrap"><select class="select-button" name="sort" aria-label="Сортировка" data-sort-select><option value="recommended" selected="@(Model.Sort == "recommended")">Рекомендованные</option><option value="newest" selected="@(Model.Sort == "newest")">Сначала новые</option><option value="price-asc" selected="@(Model.Sort == "price-asc")">Сначала дешёвые</option><option value="price-desc" selected="@(Model.Sort == "price-desc")">Сначала дорогие</option></select><svg aria-hidden="true"><use href="#i-chevron"></use></svg></span>
+                <button class="visually-hidden" type="submit">Применить сортировку</button>
+            </form>
+            <div class="view-toggle map-view-modes" aria-label="Режим карты">
+                <a class="@(Model.ViewMode == "list" ? "active" : null)" href="@Model.ModeUrl("list")" aria-label="Только список"><svg><use href="#i-list"></use></svg></a>
+                <a class="@(Model.ViewMode == "split" ? "active" : null)" href="@Model.ModeUrl("split")" aria-label="Список и карта"><svg><use href="#i-grid"></use></svg></a>
+                <a class="@(Model.ViewMode == "map" ? "active" : null)" href="@Model.ModeUrl("map")" aria-label="Только карта"><svg><use href="#i-pin"></use></svg></a>
+            </div>
+        </div>
+        <div class="quick-filters" aria-label="Быстрые фильтры">
+            @if (Model.CanSaveSearch)
+            {
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" asp-page-handler="SaveSearch" class="save-search-form"><input type="hidden" name="searchQuery" value="@Model.CurrentSearchQuery" /><input type="hidden" name="total" value="@Model.Total" /><button class="ui-button" type="submit" disabled="@Model.IsSearchSaved">@(Model.IsSearchSaved ? "Поиск сохранён" : "Сохранить поиск")</button></form>
+                }
+                else { <a class="ui-button" asp-page="/Account/SignIn">Войти и сохранить поиск</a> }
+            }
+            <a class="@(Model.Condition == "New" ? "active" : null)" href="@Model.QueryUrl("condition", Model.Condition == "New" ? null : "New")">Новые</a>
+            <a class="@(Model.HasPhoto ? "active" : null)" href="@Model.QueryUrl("hasPhoto", Model.HasPhoto ? null : "true")">С фото</a>
+            <a class="@(Model.DealType == "Free" ? "active" : null)" href="@Model.QueryUrl("dealType", Model.DealType == "Free" ? null : "Free")">Бесплатно</a>
+            <a class="@(Model.Sort == "newest" ? "active" : null)" href="@Model.QueryUrl("sort", Model.Sort == "newest" ? "recommended" : "newest")">Сначала свежие</a>
+            <button class="filter-open-button" type="button" data-dialog-open="filter-dialog"><svg><use href="#i-sliders"></use></svg><span>Фильтры</span>@if (Model.ActiveFilterCount > 0) { <b>@Model.ActiveFilterCount</b> }</button>
+            <a class="reset-filters" asp-page="/Index" asp-route-sort="recommended">↻ <span>Сбросить</span></a>
+        </div>
+    </section>
+
+    <div class="catalog-layout mode-@Model.ViewMode">
+        <section class="listing-grid" aria-label="Объявления">
+            @if (Model.Listings.Count == 0) { <div class="search-empty state-panel"><div><div class="state-panel__icon">⌕</div><h2>@(Model.SelectedCategoryName is null ? "Ничего не найдено" : $"В разделе «{Model.SelectedCategoryName}» пока нет объявлений")</h2><p>@(Model.SelectedCategoryName is null ? "Попробуйте убрать часть фильтров, проверить написание или изменить диапазон цены." : "Выберите другой раздел или сбросьте фильтр, чтобы увидеть все доступные объявления.")</p><a class="ui-button" asp-page="/Index">Сбросить поиск</a></div></div> }
+            @foreach (var listing in Model.Listings)
+            {
+                var hasListingId = Guid.TryParse(listing.Id, out var listingId);
+                var gallery = hasListingId && Model.ListingImages.TryGetValue(listingId, out var storedImages) && storedImages.Count > 0
+                    ? storedImages
+                    : (IReadOnlyList<string>)new[] { listing.Image };
+                <article class="listing-card" data-listing-id="@listing.Id" data-gallery-count="@gallery.Count">
+                    <div class="listing-card__media" data-gallery aria-label="@gallery.Count фото. Проведите мышью по изображению, чтобы пролистать.">
+                        @for (var imageIndex = 0; imageIndex < gallery.Count; imageIndex++)
+                        {
+                            <img class="listing-card__image @(imageIndex == 0 ? "is-active" : null)" data-gallery-image data-gallery-index="@imageIndex" src="@gallery[imageIndex]" alt="@(imageIndex == 0 ? listing.Title : $"{listing.Title}, фото {imageIndex + 1}")" width="600" height="450" loading="@(listing == Model.Listings[0] && imageIndex == 0 ? "eager" : "lazy")" aria-hidden="@(imageIndex == 0 ? "false" : "true")" />
+                        }
+                        @if (gallery.Count > 1)
+                        {
+                            <span class="listing-card__dots" aria-hidden="true">
+                                @for (var imageIndex = 0; imageIndex < gallery.Count; imageIndex++)
+                                {
+                                    <i class="listing-card__dot @(imageIndex == 0 ? "is-active" : null)" data-gallery-dot data-gallery-index="@imageIndex"></i>
+                                }
+                            </span>
+                        }
+                        @if (hasListingId)
+                        {
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var isFavorite = Model.FavoriteListingIds.Contains(listingId);
+                                <form method="post" asp-page-handler="ToggleFavorite" class="favorite-form"><input type="hidden" name="id" value="@listingId" /><input type="hidden" name="returnUrl" value="@currentUrl" /><button class="favorite-button" type="submit" aria-label="@(isFavorite ? $"Убрать «{listing.Title}» из избранного" : $"Добавить «{listing.Title}» в избранное")" aria-pressed="@isFavorite.ToString().ToLowerInvariant()"><svg><use href="#i-heart"></use></svg></button></form>
+                            }
+                            else
+                            {
+                                <a class="favorite-button" asp-page="/Account/SignIn" asp-route-ReturnUrl="@Url.Page("/Listings/Details", new { id = listingId, intent = "favorite" })" aria-label="Войти и добавить «@listing.Title» в избранное"><svg><use href="#i-heart"></use></svg></a>
+                            }
+                        }
+                        @if (listing.VerifiedIdentity)
+                        {
+                            <span class="verified-badge"><svg><use href="#i-check"></use></svg> Личность подтверждена</span>
+                        }
+                    </div>
+                    <div class="listing-card__body">
+                        <strong class="listing-price">@listing.PriceLabel</strong>
+                        <h2>@if (hasListingId) { <a class="listing-card__link" asp-page="/Listings/Details" asp-route-id="@listing.Id">@listing.Title</a> } else { <a class="listing-card__link" asp-page="/Index">@listing.Title</a> }</h2>
+                        <p class="listing-description">@listing.Description</p>
+                        <div class="listing-meta">
+                            <span><svg><use href="#i-pin"></use></svg>@listing.Location</span>
+                            <span>@listing.PublishedLabel</span>
+                        </div>
+                        @if (listing.Negotiable)
+                        {
+                            <span class="negotiable-badge">Торг</span>
+                        }
+                    </div>
+                </article>
+            }
+            @if (Model.Listings.Count > 0)
+            {
+                <div class="feed-loader" data-feed-loader data-offset="@Model.Listings.Count" data-total="@Model.Total" hidden="@(Model.Listings.Count >= Model.Total)">
+                    <span class="feed-loader__spinner" aria-hidden="true"></span><span data-feed-status>@(Model.Listings.Count < Model.Total ? "Загружаем ещё объявления…" : "Все объявления загружены")</span>
+                    <button class="ui-button" type="button" data-feed-retry hidden>Повторить</button>
+                </div>
+            }
+        </section>
+
+        <aside class="marketplace-map-shell" aria-label="Карта объявлений" data-marketplace-map data-config-url="/maps-api/api/v1/map/config">
+            <div class="map-top-control"><span>Искать при перемещении</span><button class="switch" type="button" data-map-search-moving aria-label="Искать при перемещении карты" aria-pressed="true"><span></span></button></div>
+            <div class="map-city">@Model.SelectedAddress <small>OpenStreetMap · локальные PMTiles</small></div>
+            <div class="marketplace-map-canvas" data-map-canvas></div>
+            <div class="marketplace-map-state" data-map-state role="status" aria-live="polite"><span data-map-state-text>Загружаем карту…</span><button class="ui-button" type="button" data-map-retry hidden>Повторить</button></div>
+            <button class="show-list-button" type="button"><svg><use href="#i-list"></use></svg> Показать списком</button>
+        </aside>
+    </div>
+
+    <button class="mobile-map-button" type="button"><svg><use href="#i-pin"></use></svg> Карта</button>
+</main>
+
+<dialog class="filter-dialog" id="filter-dialog" data-close-on-backdrop aria-labelledby="filter-dialog-title">
+    <div class="filter-dialog__panel">
+        <header class="filter-dialog__header"><div><span class="eyebrow">Настройка выдачи</span><h2 id="filter-dialog-title">Фильтры объявлений</h2></div><button class="dialog-close" type="button" data-dialog-close aria-label="Закрыть">×</button></header>
+        <form method="get" class="filter-dialog__form" data-clean-query>
+            <input type="hidden" name="q" value="@Model.Query" /><input type="hidden" name="sort" value="@Model.Sort" /><input type="hidden" name="city" value="@Model.SelectedCity" /><input type="hidden" name="address" value="@Model.SelectedAddress" /><input type="hidden" name="latitude" value="@(Model.SelectedLatitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))" /><input type="hidden" name="longitude" value="@(Model.SelectedLongitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))" /><input type="hidden" name="radius" value="@Model.Radius" /><input type="hidden" name="mode" value="@Model.ViewMode" /><input type="hidden" name="zoom" value="@Model.Zoom" />
+            <div class="field filter-dialog__wide"><label for="filter-category">Категория</label><select id="filter-category" name="category"><option value="">Все категории</option>@foreach (var option in Model.Categories) { <option value="@option.Slug" selected="@(option.Slug == Model.Category)">@option.Name</option> }</select></div>
+            <div class="field"><label for="filter-min-price">Цена от</label><input id="filter-min-price" name="minPrice" type="number" min="0" value="@Model.MinPrice" placeholder="0" /></div>
+            <div class="field"><label for="filter-max-price">Цена до</label><input id="filter-max-price" name="maxPrice" type="number" min="0" value="@Model.MaxPrice" placeholder="Без ограничения" /></div>
+            <div class="field"><label for="filter-condition">Состояние</label><select id="filter-condition" name="condition"><option value="">Любое</option><option value="New" selected="@(Model.Condition == "New")">Новое</option><option value="Used" selected="@(Model.Condition == "Used")">Б/у</option></select></div>
+            <div class="field"><label for="filter-deal-type">Тип сделки</label><select id="filter-deal-type" name="dealType"><option value="">Любой</option><option value="FixedPrice" selected="@(Model.DealType == "FixedPrice")">Фиксированная цена</option><option value="Free" selected="@(Model.DealType == "Free")">Бесплатно</option><option value="Exchange" selected="@(Model.DealType == "Exchange")">Обмен</option></select></div>
+            <label class="filter-check filter-dialog__wide"><input type="checkbox" name="hasPhoto" value="true" checked="@Model.HasPhoto" /><span>Только объявления с фотографиями</span></label>
+            @foreach (var field in Model.CategoryFilters)
+            {
+                <div class="field"><label for="filter-attr-@field.Code">@field.Name</label>@if (field.Options.Count > 0) { <select id="filter-attr-@field.Code" name="attr_@field.Code"><option value="">Любое</option>@foreach (var option in field.Options) { <option selected="@(option == field.Value)">@option</option> }</select> } else { <input id="filter-attr-@field.Code" name="attr_@field.Code" value="@field.Value" placeholder="@field.Unit" /> }</div>
+            }
+            <footer class="filter-dialog__footer"><a class="ui-button" asp-page="/Index">Сбросить всё</a><button class="ui-button primary" type="submit">Показать @Model.Total</button></footer>
+        </form>
+    </div>
+</dialog>
+
+<dialog class="ui-dialog city-dialog" id="city-dialog">
+    <div class="ui-dialog__content"><div class="city-dialog__heading"><div><span class="eyebrow">География</span><h2>Где искать?</h2></div><button class="dialog-close" type="button" data-dialog-close aria-label="Закрыть">×</button></div><p>Сейчас: @Model.SelectedAddress · радиус @Model.Radius км · источник @Model.GeoSource.</p>
+        <form method="get" class="city-form" data-search-address-editor data-suggest-url="/maps-api/api/v1/geo/suggest">
+            @foreach (var queryField in Request.Query.Where(x => x.Key is not "address" and not "latitude" and not "longitude" and not "radius" && !string.IsNullOrWhiteSpace(x.Value.ToString()))) { <input type="hidden" name="@queryField.Key" value="@queryField.Value" /> }
+            <div class="field search-address-field"><label for="search-address">Адрес</label><input id="search-address" name="address" value="@Model.SelectedAddress" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-address-suggestions" placeholder="Город, улица и дом" required /><input name="latitude" type="hidden" value="@(Model.SelectedLatitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))" /><input name="longitude" type="hidden" value="@(Model.SelectedLongitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))" /><div id="search-address-suggestions" class="address-suggestions" role="listbox" hidden></div><small>Начните вводить полный адрес и выберите вариант из списка.</small></div>
+            <div class="field"><label for="radius">Радиус</label><select id="radius" name="radius"><option value="10" selected="@(Model.Radius == 10)">10 км</option><option value="30" selected="@(Model.Radius == 30)">30 км</option><option value="100" selected="@(Model.Radius == 100)">100 км</option><option value="500" selected="@(Model.Radius == 500)">500 км</option></select></div><button class="ui-button primary" type="submit">Искать по адресу</button>
+        </form>
+        <div class="geo-permission"><button class="ui-button" type="button" data-geolocate>Определить по геолокации</button><p class="geo-permission__status" aria-live="polite">Браузер спросит разрешение. При отказе адрес можно заполнить вручную.</p></div>
+    </div>
+</dialog>
+
+@section Scripts {
+    <script src="~/vendor/marketplace-map.bundle.js" asp-append-version="true" defer></script>
+}
